@@ -2,7 +2,7 @@
 
 namespace WorkTrace.Data.Models
 {
-    public class Task
+    public class Assignment
     {
         public ObjectId Id { get; set; }
         public List<ObjectId> Users { get; set; }
