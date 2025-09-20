@@ -1,11 +1,9 @@
-﻿using MongoDB.Bson;
+﻿using WorkTrace.Data.Common.Generics;
 
-namespace WorkTrace.Data.Models
+namespace WorkTrace.Data.Models;
+
+public class InstallationStep : BaseModel
 {
-    public class InstallationStep
-    {
-        public ObjectId Id { get; set; }
-        public int Steps { get; set; }
-        public string Description { get; set; }
-    }
+    public int Steps { get; set; }
+    public required string Description { get; set; }
 }

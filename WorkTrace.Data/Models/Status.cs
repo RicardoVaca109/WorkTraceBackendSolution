@@ -1,11 +1,9 @@
-﻿using MongoDB.Bson;
+﻿using WorkTrace.Data.Common.Generics;
 
-namespace WorkTrace.Data.Models
+namespace WorkTrace.Data.Models;
+
+public class Status : BaseModel
 {
-    public class Status
-    {
-        public ObjectId Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+    public string Name { get; set; }
+    public string Description { get; set; }
 }
