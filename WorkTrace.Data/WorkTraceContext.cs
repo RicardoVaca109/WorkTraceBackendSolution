@@ -2,22 +2,21 @@
 using MongoDB.Driver;
 using WorkTrace.Data.Common.Setttings;
 
-namespace WorkTrace.Data
-{
-    public class WorkTraceContext
+namespace WorkTrace.Data;
+
+public class WorkTraceContext
+{        
+    private readonly IMongoDatabase _database;
+
+    public WorkTraceContext(IOptions<WorkTraceDatabaseSettings> workTraceDatabaseSettings) 
     {
-        private readonly MongoClient _mongoClient;
-        private readonly IMongoDatabase _database;
-        public WorkTraceContext(IOptions<WorkTraceDatabaseSettings> workTraceDatabaseSettings) 
-        {
-            _mongoClient = new MongoClient(workTraceDatabaseSettings.Value.ConnectionString);
+       var mongoClient = new MongoClient(workTraceDatabaseSettings.Value.ConnectionString); //MongoClient
 
-           _database = _mongoClient.GetDatabase(workTraceDatabaseSettings.Value.DataBaseName);
-        }
+       _database = mongoClient.GetDatabase(workTraceDatabaseSettings.Value.DataBaseName); //Cual Base de datos
+    }
 
-        public IMongoCollection<T> GetCollection<T>(string collectionName) 
-        {
-            return _database.GetCollection<T>(collectionName);  
-        }
+    public IMongoCollection<T> GetCollection<T>(string collectionName) 
+    {
+        return _database.GetCollection<T>(collectionName);  
     }
 }
