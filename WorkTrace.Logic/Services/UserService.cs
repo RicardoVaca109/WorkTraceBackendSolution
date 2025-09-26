@@ -1,4 +1,5 @@
-﻿using WorkTrace.Application.DTOs.UserDTO.Login;
+﻿using WorkTrace.Application.DTOs.UserDTO.Information;
+using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
@@ -7,9 +8,18 @@ namespace WorkTrace.Logic.Services;
 
 public class UserService(IUserRepository userRepository, IJwtService jwtService) : IUserService
 {
-    public async Task<List<User>> GetAllAsync()
+    public async Task<List<UserInformationResponse>> GetAllAsync()
     {
-        return await userRepository.GetAsync();
+        var systemUsers = await userRepository.GetAsync();
+
+        return systemUsers.Select(user => new UserInformationResponse
+        {
+            Fullname = user.FullName,
+            DocumentNumber = user.DocumentNumber,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
+        }).ToList();
     }
 
     public async Task<User?> GetByIdAsync(string id) //Buscar por Id Especifico 

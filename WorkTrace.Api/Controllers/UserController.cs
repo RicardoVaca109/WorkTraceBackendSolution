@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
@@ -16,7 +17,7 @@ public class UserController(IUserService userService) : ControllerBase
     //[SwaggerResponse(200, "Usuarios Encontrados Correctamente", typeof(List<User>))]
     //[SwaggerResponse(401, "Usuario no Autorizado")]
     //[SwaggerResponse(404, "Recurso no Encontrado")]
-    public async Task<List<User>> GetAll() =>
+    public async  Task<List<UserInformationResponse>> GetAll() => 
         await userService.GetAllAsync();
 
     [Authorize]
