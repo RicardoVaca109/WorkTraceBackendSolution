@@ -20,7 +20,7 @@ public class UserController(IUserService userService) : ControllerBase
     public async  Task<List<UserInformationResponse>> GetAll() => 
         await userService.GetAllAsync();
 
-    [Authorize]
+    //[Authorize]
     [HttpPost]
     public async Task<User> Create(User user) =>
         await userService.CreateAsync(user);
@@ -28,4 +28,8 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<LoginResponse> Login(LoginRequest request) =>
         await userService.LoginAsync(request.Email, request.Password);
 
+    [Authorize]
+    [HttpPut]
+    public async Task<UserInformationResponse> Update(string id, UpdateUserRequest request) =>
+        await userService.UdpateAsync(id, request);
 }

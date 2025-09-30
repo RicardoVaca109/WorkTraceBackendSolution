@@ -14,7 +14,7 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
 
         return systemUsers.Select(user => new UserInformationResponse
         {
-            Fullname = user.FullName,
+            FullName = user.FullName,
             DocumentNumber = user.DocumentNumber,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
@@ -60,6 +60,33 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
         {
             Token = token,
             ExpireAt = DateTime.UtcNow.AddMinutes(30)
+        };
+    }
+
+    public async Task<UserInformationResponse> UdpateAsync(string id, UpdateUserRequest user)
+    {
+        var usertoUpdate = await userRepository.GetAsync(id);
+        if (usertoUpdate == null) throw new Exception("User not Found");
+
+        usertoUpdate.FullName = string.IsNullOrWhiteSpace(user.FullName) ? usertoUpdate.FullName : user.FullName;
+        usertoUpdate.Email = string.IsNullOrWhiteSpace(user.Email) ? usertoUpdate.Email : user.Email;
+        usertoUpdate.PhoneNumber = string.IsNullOrWhiteSpace(user.PhoneNumber) ? usertoUpdate.PhoneNumber : user.PhoneNumber;
+        usertoUpdate.DocumentNumber = string.IsNullOrWhiteSpace(user.DocumentNumber) ? usertoUpdate.DocumentNumber : user.DocumentNumber;
+        if(user.Role.HasValue) usertoUpdate.Role = user.Role.Value;
+        if(user.IsActive.HasValue) usertoUpdate.IsActive = user.IsActive.Value;
+
+        if (!string.IsNullOrEmpty(user.Password)) usertoUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+        await userRepository.UpdateAsync(id, usertoUpdate);
+
+        return new UserInformationResponse
+        {
+            FullName = usertoUpdate.FullName,
+            DocumentNumber = usertoUpdate.DocumentNumber,
+            Email = usertoUpdate.Email,
+            Role = usertoUpdate.Role,
+            PhoneNumber = usertoUpdate.PhoneNumber,
+            IsActive = usertoUpdate.IsActive,
         };
     }
 }

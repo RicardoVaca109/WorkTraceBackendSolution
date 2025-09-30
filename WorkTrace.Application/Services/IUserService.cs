@@ -10,4 +10,5 @@ public interface IUserService
     Task<User?> GetByIdAsync(string id);
     Task<User> CreateAsync(User user);
     Task<LoginResponse> LoginAsync(string email, string password);
+    Task<UserInformationResponse> UdpateAsync(string id, UpdateUserRequest user);
 }
