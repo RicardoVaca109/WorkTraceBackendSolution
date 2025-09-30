@@ -13,14 +13,10 @@ public class UserController(IUserService userService) : ControllerBase
 {
     [Authorize]
     [HttpGet]
-    //[SwaggerOperation(Summary = "Obtiene todos los Usuarios del Sistema")]
-    //[SwaggerResponse(200, "Usuarios Encontrados Correctamente", typeof(List<User>))]
-    //[SwaggerResponse(401, "Usuario no Autorizado")]
-    //[SwaggerResponse(404, "Recurso no Encontrado")]
     public async  Task<List<UserInformationResponse>> GetAll() => 
         await userService.GetAllAsync();
 
-    //[Authorize]
+    [Authorize]
     [HttpPost]
     public async Task<User> Create(User user) =>
         await userService.CreateAsync(user);
