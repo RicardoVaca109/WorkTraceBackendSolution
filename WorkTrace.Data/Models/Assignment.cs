@@ -13,5 +13,4 @@ public class Assignment : BaseModel
     public required string Address { get; set; }
     public DateTime? CheckIn { get; set; }
     public DateTime? CheckOut { get; set; }
-
 }
