@@ -6,11 +6,11 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class UserService(IUserRepository userRepository, IJwtService jwtService) : IUserService
+public class UserService(IUserRepository _userRepository, IJwtService _jwtService) : IUserService
 {
     public async Task<List<UserInformationResponse>> GetAllAsync()
     {
-        var systemUsers = await userRepository.GetAsync();
+        var systemUsers = await _userRepository.GetAsync();
 
         return systemUsers.Select(user => new UserInformationResponse
         {
@@ -24,12 +24,12 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
 
     public async Task<User?> GetByIdAsync(string id) //Buscar por Id Especifico 
     {
-        return await userRepository.GetAsync(id);
+        return await _userRepository.GetAsync(id);
     }
 
     public async Task<User> CreateAsync(User user)
     {
-        var existingUsers = await userRepository.GetByDocumentNumberAndEmailAsync(user.DocumentNumber, user.Email);
+        var existingUsers = await _userRepository.GetByDocumentNumberAndEmailAsync(user.DocumentNumber, user.Email);
 
         if (existingUsers.Any(u => u.DocumentNumber == user.DocumentNumber))
             throw new Exception("There is already a user with this document number");
@@ -39,13 +39,13 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         user.IsActive = true;
 
-        await userRepository.CreateAsync(user);
+        await _userRepository.CreateAsync(user);
         return user;
     }
 
     public async Task<LoginResponse> LoginAsync(string email, string password)
     {
-        var user = await userRepository.GetByEmailAsync(email);
+        var user = await _userRepository.GetByEmailAsync(email);
         if (user == null)
             throw new Exception("Wrong Credentials");
 
@@ -54,7 +54,7 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
         if (!isValidPassword)
             throw new Exception("Wrong Credentials");
 
-        var token = jwtService.GenerateToken(user);
+        var token = _jwtService.GenerateToken(user);
 
         return new LoginResponse 
         {
@@ -65,7 +65,7 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
 
     public async Task<UserInformationResponse> UdpateAsync(string id, UpdateUserRequest user)
     {
-        var usertoUpdate = await userRepository.GetAsync(id);
+        var usertoUpdate = await _userRepository.GetAsync(id);
         if (usertoUpdate == null) throw new Exception("User not Found");
 
         usertoUpdate.FullName = string.IsNullOrWhiteSpace(user.FullName) ? usertoUpdate.FullName : user.FullName;
@@ -77,7 +77,7 @@ public class UserService(IUserRepository userRepository, IJwtService jwtService)
 
         if (!string.IsNullOrEmpty(user.Password)) usertoUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-        await userRepository.UpdateAsync(id, usertoUpdate);
+        await _userRepository.UpdateAsync(id, usertoUpdate);
 
         return new UserInformationResponse
         {

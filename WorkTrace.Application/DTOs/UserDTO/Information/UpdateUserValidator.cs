@@ -21,7 +21,8 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
             .Must(value =>  value == true || value == false)
             .When(x => x.IsActive.HasValue);
         RuleFor(x => x.Role)
-            .IsInEnum()
-            .When(x => x.Role.HasValue);
+            .Must(value => Enum.IsDefined(typeof(Enums.UserRoles), value.Value))
+            .When(x => x.Role.HasValue)
+            .WithMessage("Rol inválido.");
     }
 }
