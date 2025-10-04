@@ -18,7 +18,7 @@ public class UserController(IUserService userService) : ControllerBase
 
     [Authorize]
     [HttpPost]
-    public async Task<User> Create(User user) =>
+    public async Task<UserInformationResponse> Create(CreateUserRequest user) =>
         await userService.CreateAsync(user);
     [HttpPost]
     public async Task<LoginResponse> Login(LoginRequest request) =>
@@ -28,4 +28,13 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut]
     public async Task<UserInformationResponse> Update(string id, UpdateUserRequest request) =>
         await userService.UdpateAsync(id, request);
+
+    [Authorize]
+    [HttpPut]
+    public async Task<IActionResult> DeactivateUser(string id)
+    {
+        var succes = await userService.SetInactiveUser(id);
+        if (!succes) return NotFound("User Not Found or Inactive");
+        return Ok("User set to inactive succesfully");
+    }
 }

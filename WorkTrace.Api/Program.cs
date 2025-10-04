@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<WorkTraceDatabaseSettings>(
     builder.Configuration.GetSection("WorkTraceDatabase"));
 
+builder.Services.AddControllers();
+
 builder.Services.AddDataServices();
 builder.Services.AddRepositoriesServices();
 builder.Services.AddLogicServices();
@@ -23,11 +25,9 @@ builder.Services.AddApplicationServices();
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("ApplicationSettings"));
 
-
-builder.Services.AddControllers();
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(genConfig =>
     {
         genConfig.SwaggerDoc("v1", new OpenApiInfo

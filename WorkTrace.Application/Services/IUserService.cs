@@ -8,7 +8,8 @@ public interface IUserService
 {
     Task<List<UserInformationResponse>> GetAllAsync();
     Task<User?> GetByIdAsync(string id);
-    Task<User> CreateAsync(User user);
+    Task<UserInformationResponse> CreateAsync(CreateUserRequest userCreate);
     Task<LoginResponse> LoginAsync(string email, string password);
     Task<UserInformationResponse> UdpateAsync(string id, UpdateUserRequest user);
+    Task<bool> SetInactiveUser(string userId);
 }
