@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Services;
-using WorkTrace.Data.Models;
 
 namespace WorkTrace.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, IMapper _mapper) : ControllerBase
 {
     [Authorize]
     [HttpGet]
@@ -27,7 +27,7 @@ public class UserController(IUserService userService) : ControllerBase
     [Authorize]
     [HttpPut]
     public async Task<UserInformationResponse> Update(string id, UpdateUserRequest request) =>
-        await userService.UdpateAsync(id, request);
+        await userService.UpdateAsync(id, request);
 
     [Authorize]
     [HttpPut]

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using AutoMapper;
 using MongoDB.Driver;
 using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
@@ -8,20 +8,12 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class UserService(IUserRepository _userRepository, IJwtService _jwtService) : IUserService
+public class UserService(IUserRepository _userRepository, IJwtService _jwtService, IMapper _mapper) : IUserService
 {
     public async Task<List<UserInformationResponse>> GetAllAsync()
     {
         var systemUsers = await _userRepository.GetAsync();
-
-        return systemUsers.Select(user => new UserInformationResponse
-        {
-            FullName = user.FullName,
-            DocumentNumber = user.DocumentNumber,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            Role = user.Role,
-        }).ToList();
+        return _mapper.Map<List<UserInformationResponse>>(systemUsers);
     }
 
     public async Task<User?> GetByIdAsync(string id) //Buscar por Id Especifico 
@@ -38,27 +30,13 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         if (existingUsers.Any(u => u.Email == userCreate.Email))
             throw new Exception("There is already a user with this email");
 
-        var userToDatabase = new User
-        {
-            FullName = userCreate.FullName,
-            DocumentNumber = userCreate.DocumentNumber,
-            Email = userCreate.Email,
-            PhoneNumber = userCreate.PhoneNumber,
-            Password = userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password),
-            IsActive = userCreate.IsActive = true,
-            Role = userCreate.Role,
-        };
+        var userToDatabase = _mapper.Map<User>(userCreate);
+
+        userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
+        userCreate.IsActive = true;
 
         await _userRepository.CreateAsync(userToDatabase);
-        return new UserInformationResponse
-        {
-            FullName = userToDatabase.FullName,
-            DocumentNumber = userToDatabase.DocumentNumber,
-            Email = userToDatabase.Email,
-            Role = userToDatabase.Role,
-            PhoneNumber = userToDatabase.PhoneNumber,
-            IsActive = userToDatabase.IsActive,
-        };
+        return _mapper.Map<UserInformationResponse>(userToDatabase);
     }
 
     public async Task<LoginResponse> LoginAsync(string email, string password)
@@ -81,7 +59,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         };
     }
 
-    public async Task<UserInformationResponse> UdpateAsync(string id, UpdateUserRequest user)
+    public async Task<UserInformationResponse> UpdateAsync(string id, UpdateUserRequest user)
     {
         var usertoUpdate = await _userRepository.GetAsync(id);
         if (usertoUpdate == null) throw new Exception("User not Found");
@@ -97,15 +75,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
 
         await _userRepository.UpdateAsync(id, usertoUpdate);
 
-        return new UserInformationResponse
-        {
-            FullName = usertoUpdate.FullName,
-            DocumentNumber = usertoUpdate.DocumentNumber,
-            Email = usertoUpdate.Email,
-            Role = usertoUpdate.Role,
-            PhoneNumber = usertoUpdate.PhoneNumber,
-            IsActive = usertoUpdate.IsActive,
-        };
+        return _mapper.Map<UserInformationResponse>(usertoUpdate);
     }
 
     public async Task<bool> SetInactiveUser(string userId)

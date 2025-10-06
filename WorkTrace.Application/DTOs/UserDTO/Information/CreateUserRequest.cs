@@ -1,5 +1,4 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using System.ComponentModel.DataAnnotations;
 using WorkTrace.Application.Enums;
 
 namespace WorkTrace.Application.DTOs.UserDTO.Information;

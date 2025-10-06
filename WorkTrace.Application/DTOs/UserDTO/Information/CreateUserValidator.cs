@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.DTOs.UserDTO.Information;
 
