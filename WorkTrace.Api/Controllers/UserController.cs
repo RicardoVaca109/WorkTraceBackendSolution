@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
@@ -9,7 +8,7 @@ namespace WorkTrace.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class UserController(IUserService userService, IMapper _mapper) : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
     [Authorize]
     [HttpGet]
