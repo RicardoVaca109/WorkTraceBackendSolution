@@ -10,6 +10,6 @@ public static class ServiceExtension
     {
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IServiceandInstallationService, ServiceandInstallationService>();
     }
-
 }
