@@ -8,9 +8,9 @@ public static class ServiceExtension
 {
     public static void AddRepositoriesServices(this IServiceCollection services)
     {
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IStatusRepository, StatusRepository>();
+        services.AddScoped<IInstallationStepRepository, InstallationStepRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
-
+        services.AddScoped<IStatusRepository, StatusRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
     }
 }
