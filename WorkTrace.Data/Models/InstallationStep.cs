@@ -5,5 +5,5 @@ namespace WorkTrace.Data.Models;
 public class InstallationStep : BaseModel
 {
     public int Steps { get; set; }
-    public required string Description { get; set; }
+    public string Description { get; set; }
 }

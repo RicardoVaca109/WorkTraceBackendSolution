@@ -5,7 +5,7 @@ namespace WorkTrace.Data.Models;
 
 public class Service : BaseModel
 {
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-    public required List<ObjectId> InstallationSteps { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public List<ObjectId> InstallationSteps { get; set; }
 }
