@@ -1,9 +1,12 @@
+using WorkTrace.Application;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpClient();
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 

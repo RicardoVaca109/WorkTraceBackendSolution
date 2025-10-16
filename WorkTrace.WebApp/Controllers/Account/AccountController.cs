@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.Serialization.Serializers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using WorkTrace.Application.DTOs.UserDTO.Login;
+using WorkTrace.Application.Enums;
 
 namespace WorkTrace.WebApp.Controllers.Account;
 
@@ -30,12 +34,11 @@ public class AccountController : Controller
 
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-
         var response = await client.PostAsync("User/Login", content);
 
         if (!response.IsSuccessStatusCode)
         {
-            ViewBag.Error = "Invalid Credentials";
+            ViewBag.Error = "Invalid Credentials. Please Try Again";
             return View();
         }
 
@@ -43,8 +46,42 @@ public class AccountController : Controller
         var loginResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+        if (loginResponse == null || string.IsNullOrEmpty(loginResponse.Token))
+        {
+            ViewBag.Error = "Error processing login response.";
+            return View();
+        }
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(loginResponse.Token);
+
+        var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+        if (!Enum.TryParse<UserRoles>(roleClaim, out var userRole))
+        {
+            ViewBag.Error = "Invalid role in token.";
+            return View();
+        }
+
+        var allowedRoles = new[] { UserRoles.Administrador };
+        if (!allowedRoles.Contains(userRole))
+        {
+            ViewBag.Error = "Your role does not have access to this web application.";
+            return View();
+        }
+
         HttpContext.Session.SetString("JWToken", loginResponse.Token);
+        HttpContext.Session.SetString("UserRole", userRole.ToString());
+        HttpContext.Session.SetString("UserName",
+            jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "");
 
         return RedirectToAction("Index", "Home");
+    }
+
+    [HttpPost]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear();
+        return RedirectToAction("Login", "Account");
     }
 }
