@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using WorkTrace.Application.DTOs.ClientDTO.Information;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
@@ -14,6 +15,9 @@ public static class ServiceExtension
     {
         
         services.AddFluentValidationAutoValidation()
+        //Client Validations
+                .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()
         //User Validations
                 .AddValidatorsFromAssemblyContaining<CreateUserValidator>()
                 .AddValidatorsFromAssemblyContaining<LoginValidator>()
@@ -25,5 +29,6 @@ public static class ServiceExtension
         //Automapper
         services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(ServiceProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(ClientProfile).Assembly);
     }
 }
