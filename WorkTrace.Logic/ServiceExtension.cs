@@ -9,6 +9,7 @@ public static class ServiceExtension
     public static void AddLogicServices(this IServiceCollection services)
     {
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IServiceandInstallationService, ServiceandInstallationService>();
     }
