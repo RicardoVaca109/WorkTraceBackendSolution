@@ -1,8 +1,6 @@
-﻿using WorkTrace.Data.Common.Generics;
+﻿namespace WorkTrace.Application.DTOs.StatusDTO.Information;
 
-namespace WorkTrace.Data.Models;
-
-public class Status : BaseModel
+public class StatusInformationResponse
 {
     public string Name { get; set; }
     public string Description { get; set; }
