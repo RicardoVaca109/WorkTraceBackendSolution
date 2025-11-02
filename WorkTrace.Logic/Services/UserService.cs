@@ -30,10 +30,10 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         if (existingUsers.Any(u => u.Email == userCreate.Email))
             throw new Exception("There is already a user with this email");
 
-        var userToDatabase = _mapper.Map<User>(userCreate);
-
         userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
         userCreate.IsActive = true;
+
+        var userToDatabase = _mapper.Map<User>(userCreate);
 
         await _userRepository.CreateAsync(userToDatabase);
         return _mapper.Map<UserInformationResponse>(userToDatabase);
