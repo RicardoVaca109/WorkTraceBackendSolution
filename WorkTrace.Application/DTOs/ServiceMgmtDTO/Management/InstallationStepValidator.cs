@@ -7,7 +7,8 @@ public class InstallationStepValidator : AbstractValidator<CreateInstallationSte
     public InstallationStepValidator()
     {
         RuleFor(x => x.Steps)
-            .GreaterThan(0).WithMessage("Step number must be positive.");
+            .NotEmpty()
+            .GreaterThan(0).WithMessage("Step number must be positive greater than > 0");
         RuleFor(x => x.Description)
             .NotEmpty()
             .Length(1, 256);

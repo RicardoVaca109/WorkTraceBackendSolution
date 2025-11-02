@@ -9,6 +9,11 @@ namespace WorkTrace.Logic.Services;
 
 public class ServiceandInstallationService(IInstallationStepRepository _installationStepRepository, IServiceRepository _serviceRepository, IMapper _mapper) : IServiceandInstallationService
 {
+    public async Task<List<ServiceInformationResponse>> GetAllAsync()
+    {
+        var services = await _serviceRepository.GetAsync();
+        return _mapper.Map<List<ServiceInformationResponse>>(services);
+    }
     public async Task<ServiceInformationResponse?> GetByIdAsync(string id)
     {
         var serviceById = await _serviceRepository.GetAsync(id);

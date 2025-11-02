@@ -11,6 +11,11 @@ public class ServiceandInstallationStepsController(IServiceandInstallationServic
 {
     [Authorize]
     [HttpGet]
+    public async Task<List<ServiceInformationResponse>> GetAll() =>
+        await _serviceandInstallationService.GetAllAsync();
+
+    [Authorize]
+    [HttpGet]
     public async Task<ServiceInformationResponse> GetById(string id) =>
         await _serviceandInstallationService.GetByIdAsync(id);
 

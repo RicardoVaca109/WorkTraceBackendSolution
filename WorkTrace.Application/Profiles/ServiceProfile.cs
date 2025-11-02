@@ -10,6 +10,7 @@ public class ServiceProfile : Profile
     {
         CreateMap<CreateInstallationStepRequest, InstallationStep>();
         CreateMap<CreateServiceRequest, Service>();
-        CreateMap<Service, ServiceInformationResponse>();
+        CreateMap<Service, ServiceInformationResponse>()
+            .ForMember(dest => dest.InstallationSteps, opt => opt.MapFrom(src => src.InstallationSteps.Select(x => x.ToString())));
     }
 }

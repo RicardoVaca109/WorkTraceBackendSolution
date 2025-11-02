@@ -1,5 +1,4 @@
 ﻿using WorkTrace.Application.DTOs.ClientDTO.Information;
-using WorkTrace.Application.DTOs.UserDTO.Information;
 
 namespace WorkTrace.Application.Services;
 
