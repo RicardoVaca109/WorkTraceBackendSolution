@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson.Serialization.Serializers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -38,7 +37,26 @@ public class AccountController : Controller
 
         if (!response.IsSuccessStatusCode)
         {
-            ViewBag.Error = "Invalid Credentials. Please Try Again";
+            var errorContent = await response.Content.ReadAsStringAsync();
+
+            // Try to parse error response
+            try
+            {
+                using var jsonDoc = System.Text.Json.JsonDocument.Parse(errorContent);
+                if (jsonDoc.RootElement.TryGetProperty("error", out var errorMsg))
+                {
+                    ViewBag.Error = errorMsg.GetString() ?? "Invalid Credentials. Please Try Again";
+                }
+                else
+                {
+                    ViewBag.Error = "Invalid Credentials. Please Try Again";
+                }
+            }
+            catch
+            {
+                ViewBag.Error = "Invalid Credentials. Please Try Again";
+            }
+
             return View();
         }
 
@@ -54,6 +72,13 @@ public class AccountController : Controller
 
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(loginResponse.Token);
+
+        var isActiveClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "IsActive")?.Value;
+        if (!bool.TryParse(isActiveClaim, out var isActive) || !isActive)
+        {
+            ViewBag.Error = "User account is inactive. Contact your administrator.";
+            return View();
+        }
 
         var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
