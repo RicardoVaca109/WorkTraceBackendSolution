@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using WorkTrace.Application.DTOs.StatusDTO.Information;
+﻿using WorkTrace.Application.DTOs.StatusDTO.Information;
 
 namespace WorkTrace.Application.Services;
 
