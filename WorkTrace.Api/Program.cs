@@ -8,6 +8,9 @@ using WorkTrace.Data;
 using WorkTrace.Data.Common.Setttings;
 using WorkTrace.Logic;
 using WorkTrace.Repositories;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,23 @@ builder.Services.Configure<WorkTraceDatabaseSettings>(
     builder.Configuration.GetSection("WorkTraceDatabase"));
 
 builder.Services.AddControllers();
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowWebApp", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:5058",
+            "https://localhost:7257",
+            "http://localhost:11516",
+            "https://localhost:44384"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
 
 builder.Services.AddDataServices();
 builder.Services.AddRepositoriesServices();
@@ -96,7 +116,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Disabled for HTTP-only development
+
+app.UseCors("AllowWebApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

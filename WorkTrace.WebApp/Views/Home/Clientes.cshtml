@@ -1,0 +1,612 @@
+@model List<WorkTrace.Application.DTOs.ClientDTO.Information.ClientInformationResponse>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<style>
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+    }
+
+    .clients-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .clients-table thead {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .clients-table thead th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+    }
+
+    .clients-table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+    }
+
+    .clients-table tbody tr:hover {
+        background-color: #f0fdf4;
+    }
+
+    .clients-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .clients-table tbody td {
+        padding: 1rem;
+        color: #374151;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background-color: #10b981;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .back-button:hover {
+        background-color: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .error-message {
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #dc2626;
+    }
+
+    .success-message {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #10b981;
+    }
+
+    .edit-icon {
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0.4rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .edit-icon:hover {
+        background: #e5e7eb;
+        color: #10b981;
+        transform: scale(1.1);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 600px;
+        animation: slideDown 0.3s ease;
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .modal-close {
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 1.5rem;
+        font-weight: 700;
+        transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+        color: #111827;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d1d5db;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="header-section">
+        <h1 class="text-4xl font-bold text-gray-800">Clientes</h1>
+        <div style="display: flex; align-items: center;">
+            <button class="btn btn-primary" onclick="openCreateModal()" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>
+                Crear Cliente
+            </button>
+            <a asp-controller="Home" asp-action="Index" class="back-button" style="margin-left: 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                </svg>
+                Volver al Panel
+            </a>
+        </div>
+    </div>
+
+    <div id="successMessage" class="success-message" style="display: none;">
+        <strong>Éxito:</strong> <span id="successText"></span>
+    </div>
+
+    <div id="errorMessage" class="error-message" style="display: none;">
+        <strong>Error:</strong> <span id="errorText"></span>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Error))
+    {
+        <div class="error-message">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <div class="table-container">
+        @if (Model != null && Model.Any())
+        {
+            <table class="clients-table">
+                <thead>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Número de Documento</th>
+                        <th>Número de Teléfono</th>
+                        <th>Email</th>
+                        <th style="width: 80px; text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var client in Model)
+                    {
+                        <tr data-client-id="@client.Id">
+                            <td class="client-fullname">@client.FullName</td>
+                            <td class="client-document">@client.DocumentNumber</td>
+                            <td class="client-phone">@client.PhoneNumber</td>
+                            <td class="client-email">@client.Email</td>
+                            <td style="text-align: center;">
+                                <span class="edit-icon" onclick="editClient('@client.Id', '@client.FullName', '@client.DocumentNumber', '@client.PhoneNumber', '@client.Email')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                    </svg>
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="mx-auto mb-4 text-gray-400" viewBox="0 0 16 16">
+                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                </svg>
+                <h3 class="text-xl font-semibold mb-2">No hay clientes registrados</h3>
+                <p>No se encontraron clientes en el sistema.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for Editing Client -->
+<div id="clientModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Editar Cliente</h3>
+            <span class="modal-close" onclick="closeClientModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="clientForm">
+                <input type="hidden" id="clientId" />
+                <div class="form-group">
+                    <label class="form-label" for="clientFullName">Nombre Completo</label>
+                    <input type="text" id="clientFullName" class="form-input" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="clientDocumentNumber">Número de Documento</label>
+                        <input type="text" id="clientDocumentNumber" class="form-input" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="clientPhoneNumber">Número de Teléfono</label>
+                        <input type="tel" id="clientPhoneNumber" class="form-input" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="clientEmail">Email</label>
+                    <input type="email" id="clientEmail" class="form-input" required />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeClientModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveClient()">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Creating Client -->
+<div id="createClientModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Crear Nuevo Cliente</h3>
+            <span class="modal-close" onclick="closeCreateModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="createClientForm">
+                <div class="form-group">
+                    <label class="form-label" for="createFullName">Nombre Completo</label>
+                    <input type="text" id="createFullName" class="form-input" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="createDocumentNumber">Número de Documento</label>
+                        <input type="text" id="createDocumentNumber" class="form-input" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createPhoneNumber">Número de Teléfono</label>
+                        <input type="tel" id="createPhoneNumber" class="form-input" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="createEmail">Email</label>
+                    <input type="email" id="createEmail" class="form-input" required />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="createClient()">Crear Cliente</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Client Modal Functions
+    function editClient(id, fullName, documentNumber, phoneNumber, email) {
+        document.getElementById('clientId').value = id;
+        document.getElementById('clientFullName').value = fullName;
+        document.getElementById('clientDocumentNumber').value = documentNumber;
+        document.getElementById('clientPhoneNumber').value = phoneNumber;
+        document.getElementById('clientEmail').value = email;
+        document.getElementById('clientModal').classList.add('show');
+    }
+
+    function closeClientModal() {
+        document.getElementById('clientModal').classList.remove('show');
+    }
+
+    function openCreateModal() {
+        document.getElementById('createClientModal').classList.add('show');
+    }
+
+    function closeCreateModal() {
+        document.getElementById('createClientModal').classList.remove('show');
+        document.getElementById('createClientForm').reset();
+    }
+
+    async function createClient() {
+        const fullName = document.getElementById('createFullName').value;
+        const documentNumber = document.getElementById('createDocumentNumber').value;
+        const phoneNumber = document.getElementById('createPhoneNumber').value;
+        const email = document.getElementById('createEmail').value;
+
+        if (!fullName || !documentNumber || !phoneNumber || !email) {
+            showError('Por favor complete todos los campos');
+            return;
+        }
+
+        const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        if (!emailRegex.test(email)) {
+            showError('Por favor ingrese un email válido');
+            return;
+        }
+
+        const button = event.target;
+        button.classList.add('loading');
+        button.textContent = 'Creando...';
+
+        try {
+            const response = await fetch('@Url.Action("CreateClient", "Home")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName,
+                    documentNumber,
+                    phoneNumber,
+                    email
+                })
+            });
+
+            if (response.ok) {
+                showSuccess('Cliente creado correctamente. La página se recargará.');
+                closeCreateModal();
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    let errorMessage = "Error al crear el cliente.";
+                    if (errorData && errorData.errors) {
+                        errorMessage = Object.values(errorData.errors).flat().join(' ');
+                    }
+                    showError(errorMessage);
+                } catch (e) {
+                    // If parsing fails, the error is likely a plain string.
+                    showError(errorText || 'Error al procesar la respuesta del servidor.');
+                }
+            }
+        } catch (error) {
+            showError('Error de conexión: ' + error.message);
+        } finally {
+            button.classList.remove('loading');
+            button.textContent = 'Crear Cliente';
+        }
+    }
+
+    async function saveClient() {
+        const id = document.getElementById('clientId').value;
+        const fullName = document.getElementById('clientFullName').value;
+        const documentNumber = document.getElementById('clientDocumentNumber').value;
+        const phoneNumber = document.getElementById('clientPhoneNumber').value;
+        const email = document.getElementById('clientEmail').value;
+
+        // Validation
+        if (!fullName || !documentNumber || !phoneNumber || !email) {
+            showError('Por favor complete todos los campos');
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        if (!emailRegex.test(email)) {
+            showError('Por favor ingrese un email válido');
+            return;
+        }
+
+        const button = event.target;
+        button.classList.add('loading');
+        button.textContent = 'Guardando...';
+
+        try {
+            const response = await fetch('@Url.Action("UpdateClient", "Home")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id,
+                    fullName,
+                    documentNumber,
+                    phoneNumber,
+                    email
+                })
+            });
+
+            if (response.ok) {
+                showSuccess('Cliente actualizado correctamente');
+                closeClientModal();
+
+                // Update UI without reloading
+                const row = document.querySelector(`[data-client-id="${id}"]`);
+                if (row) {
+                    row.querySelector('.client-fullname').textContent = fullName;
+                    row.querySelector('.client-document').textContent = documentNumber;
+                    row.querySelector('.client-phone').textContent = phoneNumber;
+                    row.querySelector('.client-email').textContent = email;
+                }
+            } else {
+                const errorData = await response.json();
+                showError(errorData.error || 'Error al actualizar el cliente');
+            }
+        } catch (error) {
+            showError('Error de conexión: ' + error.message);
+        } finally {
+            button.classList.remove('loading');
+            button.textContent = 'Guardar Cambios';
+        }
+    }
+
+    // Utility Functions
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        document.getElementById('successText').textContent = message;
+        successDiv.style.display = 'block';
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 5000);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        document.getElementById('errorText').textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const clientModal = document.getElementById('clientModal');
+        const createModal = document.getElementById('createClientModal');
+        if (event.target === clientModal) {
+            closeClientModal();
+        }
+        if (event.target === createModal) {
+            closeCreateModal();
+        }
+    }
+</script>
