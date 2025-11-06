@@ -30,10 +30,10 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         if (existingUsers.Any(u => u.Email == userCreate.Email))
             throw new Exception("There is already a user with this email");
 
-        var userToDatabase = _mapper.Map<User>(userCreate);
-
         userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
         userCreate.IsActive = true;
+
+        var userToDatabase = _mapper.Map<User>(userCreate);
 
         await _userRepository.CreateAsync(userToDatabase);
         return _mapper.Map<UserInformationResponse>(userToDatabase);
@@ -50,6 +50,9 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         if (!isValidPassword)
             throw new Exception("Wrong Credentials");
 
+        if (!user.IsActive)
+            throw new Exception("User account is inactive");
+
         var token = _jwtService.GenerateToken(user);
 
         return new LoginResponse
@@ -61,7 +64,15 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
 
     public async Task<UserInformationResponse> UpdateAsync(string id, UpdateUserRequest user)
     {
-        var usertoUpdate = await _userRepository.GetAsync(id);
+        // Try to get user by email (id parameter contains email for web app updates)
+        var usertoUpdate = await _userRepository.GetByEmailAsync(id);
+
+        // Fallback to ObjectId lookup if not found by email
+        if (usertoUpdate == null)
+        {
+            usertoUpdate = await _userRepository.GetAsync(id);
+        }
+
         if (usertoUpdate == null) throw new Exception("User not Found");
 
         usertoUpdate.FullName = string.IsNullOrWhiteSpace(user.FullName) ? usertoUpdate.FullName : user.FullName;
@@ -73,7 +84,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
 
         if (!string.IsNullOrEmpty(user.Password)) usertoUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-        await _userRepository.UpdateAsync(id, usertoUpdate);
+        await _userRepository.UpdateAsync(usertoUpdate.Id.ToString(), usertoUpdate);
 
         return _mapper.Map<UserInformationResponse>(usertoUpdate);
     }

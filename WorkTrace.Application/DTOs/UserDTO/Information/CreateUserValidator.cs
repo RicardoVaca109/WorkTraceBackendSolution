@@ -22,10 +22,10 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
             .NotEmpty()
             .Length(8, 16);
         RuleFor(x => x.Role)
-            .NotEmpty()
-            .Must(x => Enum.IsDefined(typeof(Enums.UserRoles), x));
+            .Must(x => Enum.IsDefined(typeof(Enums.UserRoles), x))
+            .WithMessage("'Role' must be a valid value.");
         RuleFor(x => x.IsActive)
             .NotEmpty()
             .Must(value => value == true || value == false);
-    }
+    }
 }

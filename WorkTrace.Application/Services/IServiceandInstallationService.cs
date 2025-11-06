@@ -4,6 +4,9 @@ namespace WorkTrace.Application.Services;
 
 public interface IServiceandInstallationService
 {
+    Task<List<ServiceInformationResponse>> GetAllAsync();
     Task<ServiceInformationResponse?> GetByIdAsync(string id);
     Task<ServiceInformationResponse> CreateServiceWithStepAsync(CreateServiceRequest request);
+    Task<ServiceInformationResponse> UpdateServiceAsync(UpdateServiceRequest request);
+    Task<InstallationStepInformationResponse> UpdateInstallationStepAsync(UpdateInstallationStepRequest request);
 }

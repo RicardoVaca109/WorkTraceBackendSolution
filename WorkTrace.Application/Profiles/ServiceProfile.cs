@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Data.Models;
 
@@ -10,6 +10,8 @@ public class ServiceProfile : Profile
     {
         CreateMap<CreateInstallationStepRequest, InstallationStep>();
         CreateMap<CreateServiceRequest, Service>();
-        CreateMap<Service, ServiceInformationResponse>();
+        CreateMap<InstallationStep, InstallationStepInformationResponse>();
+        CreateMap<Service, ServiceInformationResponse>()
+            .ForMember(dest => dest.InstallationSteps, opt => opt.Ignore());
     }
 }

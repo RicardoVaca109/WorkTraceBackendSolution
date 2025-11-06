@@ -11,6 +11,10 @@ public class ServiceandInstallationStepsController(IServiceandInstallationServic
 {
     [Authorize]
     [HttpGet]
+    public async Task<List<ServiceInformationResponse>> GetAll() =>
+        await _serviceandInstallationService.GetAllAsync();
+    [Authorize]
+    [HttpGet]
     public async Task<ServiceInformationResponse> GetById(string id) =>
         await _serviceandInstallationService.GetByIdAsync(id);
 
@@ -18,4 +22,13 @@ public class ServiceandInstallationStepsController(IServiceandInstallationServic
     [HttpPost]
     public async Task<ServiceInformationResponse> Create(CreateServiceRequest request) =>
         await _serviceandInstallationService.CreateServiceWithStepAsync(request);
+
+    [Authorize]
+    [HttpPut]
+    public async Task<ServiceInformationResponse> UpdateService(UpdateServiceRequest request) =>
+        await _serviceandInstallationService.UpdateServiceAsync(request);
+    [Authorize]
+    [HttpPut]
+    public async Task<InstallationStepInformationResponse> UpdateInstallationStep(UpdateInstallationStepRequest request) =>
+        await _serviceandInstallationService.UpdateInstallationStepAsync(request);
 }
