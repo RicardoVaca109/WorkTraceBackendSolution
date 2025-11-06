@@ -14,5 +14,5 @@ public class ServiceViewModel
     public string Description { get; set; }
 
     [JsonPropertyName("installationSteps")]
-    public List<InstallationStepViewModel> InstallationSteps { get; set; } = new();
+    public List<InstallationStepViewModel> InstallationSteps { get; set; } = new();
 }

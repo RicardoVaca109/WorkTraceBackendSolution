@@ -8,6 +8,6 @@ public class ServiceRepository : GenericRepository<Service>, IServiceRepository
 {
     public ServiceRepository(WorkTraceContext context)
     {
-        Collection = context.GetCollection<Service>("service");
+        Collection = context.GetCollection<Service>("services");
     }
 }

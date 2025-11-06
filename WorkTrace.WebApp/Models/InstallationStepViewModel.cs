@@ -11,5 +11,5 @@ public class InstallationStepViewModel
     public int Steps { get; set; }
 
     [JsonPropertyName("description")]
-    public string Description { get; set; }
+    public string Description { get; set; }
 }
