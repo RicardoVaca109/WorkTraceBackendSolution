@@ -7,7 +7,7 @@ namespace WorkTrace.Application.Services;
 public interface IUserService
 {
     Task<List<UserInformationResponse>> GetAllAsync();
-    Task<User?> GetByIdAsync(string id);
+    Task<UserInformationResponse?> GetByIdAsync(string id);
     Task<UserInformationResponse> CreateAsync(CreateUserRequest userCreate);
     Task<LoginResponse> LoginAsync(string email, string password);
     Task<UserInformationResponse> UpdateAsync(string id, UpdateUserRequest user);

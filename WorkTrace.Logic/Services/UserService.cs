@@ -16,9 +16,13 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         return _mapper.Map<List<UserInformationResponse>>(systemUsers);
     }
 
-    public async Task<User?> GetByIdAsync(string id) //Buscar por Id Especifico 
+    public async Task<UserInformationResponse?> GetByIdAsync(string id) 
     {
-        return await _userRepository.GetAsync(id);
+        var userById = await _userRepository.GetAsync(id);
+        if(userById == null) 
+            throw new Exception("User not Found"); 
+        var response = _mapper.Map<UserInformationResponse>(userById);
+        return response;
     }
 
     public async Task<UserInformationResponse> CreateAsync(CreateUserRequest userCreate)
