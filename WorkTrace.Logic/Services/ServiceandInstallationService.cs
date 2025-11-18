@@ -30,7 +30,7 @@ public class ServiceandInstallationService(IInstallationStepRepository _installa
 
         return responses;
     }
-    public async Task<ServiceInformationResponse?> GetByIdAsync(string id)
+    public async Task<ServiceInformationResponse> GetByIdAsync(string id)
     {
         var serviceById = await _serviceRepository.GetAsync(id);
         if (serviceById == null)

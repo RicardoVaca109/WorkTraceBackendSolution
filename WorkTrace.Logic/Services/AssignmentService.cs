@@ -37,13 +37,14 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     {
         var rawData = await _assignmentRepository.GetClientAssignmentRawAsync(cliendId);
 
-        var mapResult = rawData.Select(doc => new ClientHistoryResponse 
-        { Service = doc["Service"].AsString,
-          Date = doc["Date"].ToUniversalTime(),
-          CheckOut = doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull ? doc["CheckOut"].ToUniversalTime() : null,
-          Status = doc["Status"].AsString,
-          Address = doc["Address"].AsString,
-          Users = [.. doc["Users"].AsBsonArray.Select(u => u.AsString)],
+        var mapResult = rawData.Select(doc => new ClientHistoryResponse
+        {
+            Service = doc["Service"].AsString,
+            Date = doc["Date"].ToUniversalTime(),
+            CheckOut = doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull ? doc["CheckOut"].ToUniversalTime() : null,
+            Status = doc["Status"].AsString,
+            Address = doc["Address"].AsString,
+            Users = [.. doc["Users"].AsBsonArray.Select(u => u.AsString)],
         }).ToList();
         return mapResult;
     }

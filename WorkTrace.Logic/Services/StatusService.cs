@@ -39,7 +39,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
 
         statusToUpdate.Name = string.IsNullOrWhiteSpace(status.Name) ? statusToUpdate.Name : status.Name;
         statusToUpdate.Description = string.IsNullOrWhiteSpace(status.Description) ? statusToUpdate.Description : status.Description;
-        if(status.IsActive.HasValue) statusToUpdate.IsActive = status.IsActive.Value;
+        if (status.IsActive.HasValue) statusToUpdate.IsActive = status.IsActive.Value;
 
         await _statusRepository.UpdateAsync(id, statusToUpdate);
 
@@ -51,7 +51,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
         var statusFilter = await _statusRepository.GetAsync(statusId);
         if (statusFilter == null) throw new Exception("Status Not Found.");
 
-        if(!statusFilter.IsActive) return false;
+        if (!statusFilter.IsActive) return false;
 
         statusFilter.IsActive = false;
 
