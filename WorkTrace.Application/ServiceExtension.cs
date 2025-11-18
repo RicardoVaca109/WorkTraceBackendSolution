@@ -29,6 +29,8 @@ public static class ServiceExtension
         //Service and installationstep Validations
                 .AddValidatorsFromAssemblyContaining<InstallationStepValidator>()
                 .AddValidatorsFromAssemblyContaining<ServiceValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateInstallationStepValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateServiceValidator>()
         //Status Validations
                 .AddValidatorsFromAssemblyContaining<CreateStatusValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>();

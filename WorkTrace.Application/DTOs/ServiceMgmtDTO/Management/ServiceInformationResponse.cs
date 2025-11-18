@@ -2,7 +2,8 @@
 
 public class ServiceInformationResponse
 {
+    public string Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public List<string> InstallationSteps { get; set; }
+    public List<InstallationStepResponse> InstallationSteps { get; set; }
 }
