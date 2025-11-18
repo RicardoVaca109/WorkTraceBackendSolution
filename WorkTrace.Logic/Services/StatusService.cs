@@ -14,6 +14,13 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
         return _mapper.Map<List<StatusInformationResponse>>(systemStatus);
     }
 
+    public async Task<StatusInformationResponse> GeyByIdAsync(string id)
+    {
+        var statusById = await _statusRepository.GetAsync(id) ?? throw new Exception("Status not found");
+        var response = _mapper.Map<StatusInformationResponse>(statusById);
+        return response;
+    }
+
     public async Task<StatusInformationResponse> CreateStatusAsync(CreateStatusRequest statusCreate)
     {
         var existingStatus = await _statusRepository.GetByName(statusCreate.Name);

@@ -26,6 +26,13 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         return _mapper.Map<List<AssignmentResponse>>(assignmentsInSystem);
     }
 
+    public async Task<AssignmentResponse> GetByIdAsync(string id)
+    {
+        var assignmentById = await _assignmentRepository.GetAsync(id) ?? throw new Exception("Assignment not found");
+        var response = _mapper.Map<AssignmentResponse>(assignmentById);
+        return response;
+    }
+
     public async Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string cliendId)
     {
         var rawData = await _assignmentRepository.GetClientAssignmentRawAsync(cliendId);
