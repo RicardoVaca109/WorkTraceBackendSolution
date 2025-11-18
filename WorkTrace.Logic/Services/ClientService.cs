@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
-using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
@@ -20,7 +19,6 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
         var existingClient = await _clientRepository.GetByDocumentNumberAsync(clientCreate.DocumentNumber);
         if (existingClient != null) throw new Exception("There is already a client with this document number");
 
-        
         var clientToDatabase = _mapper.Map<Client>(clientCreate);
 
         await _clientRepository.CreateAsync(clientToDatabase);

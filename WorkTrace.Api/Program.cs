@@ -8,9 +8,9 @@ using WorkTrace.Data;
 using WorkTrace.Data.Common.Setttings;
 using WorkTrace.Logic;
 using WorkTrace.Repositories;
-using DotNetEnv;
+//using DotNetEnv;
 
-Env.Load();
+//Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +27,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
             "http://localhost:5058",
-            "https://localhost:7257",
+            "https://localhost:7156",
             "http://localhost:11516",
             "https://localhost:44384"
         )
@@ -106,6 +106,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtConfiguration.Audience,
     };
 });
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

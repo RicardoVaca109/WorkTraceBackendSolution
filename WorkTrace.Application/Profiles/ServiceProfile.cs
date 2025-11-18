@@ -10,6 +10,12 @@ public class ServiceProfile : Profile
     {
         CreateMap<CreateInstallationStepRequest, InstallationStep>();
         CreateMap<CreateServiceRequest, Service>();
-        CreateMap<Service, ServiceInformationResponse>();
+
+        CreateMap<UpdateInstallationStepRequest, InstallationStep>();
+        CreateMap<UpdateServiceRequest, Service>();
+
+        CreateMap<Service, ServiceInformationResponse>()
+                .ForMember(dest => dest.InstallationSteps, opt => opt.Ignore());
+        CreateMap<InstallationStep, InstallationStepResponse>();
     }
 }

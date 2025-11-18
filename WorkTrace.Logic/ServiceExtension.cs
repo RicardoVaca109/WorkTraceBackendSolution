@@ -12,5 +12,8 @@ public static class ServiceExtension
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IServiceandInstallationService, ServiceandInstallationService>();
+        services.AddScoped<IStatusService,  StatusService>();
+        services.AddScoped<IAssignmentService, AssignmentService>();
+        services.AddScoped<IGeocodingService, GeocodingService>();
     }
 }
