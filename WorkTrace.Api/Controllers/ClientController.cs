@@ -11,8 +11,11 @@ public class ClientController(IClientService clientService) : ControllerBase
 {
     [Authorize]
     [HttpGet]
-    public async Task<List<ClientInformationResponse>> GetAll() =>
-        await clientService.GetAllAsync();
+    public async Task<ActionResult<List<ClientInformationResponse>>> GetAll()
+    {
+        var clientsInSystem = await clientService.GetAllAsync();
+        return Ok(clientsInSystem);
+    }
 
     [Authorize]
     [HttpPost]
@@ -20,7 +23,10 @@ public class ClientController(IClientService clientService) : ControllerBase
         await clientService.CreateClientAsync(request);
 
     [Authorize]
-    [HttpPut]
-    public async Task<ClientInformationResponse> Update(string id, UpdateClientRequest request) =>
-        await clientService.UpdateClientAsync(id, request);
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ClientInformationResponse>> Update(string id, [FromBody] UpdateClientRequest request)
+    {
+        var updateClient = await clientService.UpdateClientAsync(id, request);
+        return Ok(updateClient);
+    }
 }

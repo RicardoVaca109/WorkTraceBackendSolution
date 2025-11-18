@@ -11,8 +11,11 @@ public class StatusController(IStatusService statusService) : ControllerBase
 {
     [Authorize]
     [HttpGet]
-    public async Task<List<StatusInformationResponse>> GetAll() =>
-        await statusService.GetAllAsync();
+    public async Task<ActionResult<List<StatusInformationResponse>>> GetAll()
+    {
+        var statusesInSystem = await statusService.GetAllAsync();
+        return Ok(statusesInSystem);
+    }
 
     [Authorize]
     [HttpPost]
@@ -20,16 +23,19 @@ public class StatusController(IStatusService statusService) : ControllerBase
         await statusService.CreateStatusAsync(request);
 
     [Authorize]
-    [HttpPut]
-    public async Task<StatusInformationResponse> Update(string id, UpdateStatusRequest request) =>
-        await statusService.UpdateStatusAsync(id, request);
+    [HttpPut("{id}")]
+    public async Task<ActionResult<StatusInformationResponse>> Update(string id, [FromBody] UpdateStatusRequest request)
+    {
+        var updatedStatus = await statusService.UpdateStatusAsync(id, request);
+        return Ok(updatedStatus);
+    }
 
     [Authorize]
-    [HttpPut]
-    public async Task<IActionResult> DeactivateStatus (string id)
+    [HttpPut("{id}/deactivate")]
+    public async Task<IActionResult> DeactivateStatus(string id)
     {
         var succes = await statusService.SetStatusInactive(id);
-        if(!succes) return NotFound("Status Not Found or Inactive");
+        if (!succes) return NotFound("Status Not Found or Inactive");
         return Ok("Status set to inactive succesfully");
     }
 }
