@@ -16,11 +16,12 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         return _mapper.Map<List<UserInformationResponse>>(systemUsers);
     }
 
-    public async Task<UserInformationResponse?> GetByIdAsync(string id) 
+    public async Task<UserInformationResponse> GetByIdAsync(string id)
     {
         var userById = await _userRepository.GetAsync(id);
-        if(userById == null) 
-            throw new Exception("User not Found"); 
+        if (userById == null)
+            throw new Exception("User not Found");
+
         var response = _mapper.Map<UserInformationResponse>(userById);
         return response;
     }

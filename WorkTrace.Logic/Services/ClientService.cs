@@ -14,6 +14,13 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
         return _mapper.Map<List<ClientInformationResponse>>(systemClients);
     }
 
+    public async Task<ClientInformationResponse> GetByIdAsync(string id)
+    {
+        var clientById = await _clientRepository.GetAsync(id) ?? throw new Exception("User not Found");
+        var response = _mapper.Map<ClientInformationResponse>(clientById);
+        return response;
+    }
+
     public async Task<ClientInformationResponse> CreateClientAsync(CreateClientRequest clientCreate)
     {
         var existingClient = await _clientRepository.GetByDocumentNumberAsync(clientCreate.DocumentNumber);

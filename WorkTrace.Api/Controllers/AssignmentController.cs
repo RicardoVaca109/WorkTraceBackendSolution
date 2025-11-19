@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.Serialization.IdGenerators;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.Services;
 using WorkTrace.Logic.Services;
@@ -25,6 +26,11 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
         var assignments = await assignmentService.GetAllAsync();
         return Ok(assignments);
     }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<AssignmentResponse> GetById(string id) =>
+        await assignmentService.GetByIdAsync(id);
 
     [Authorize]
     [HttpGet("{clientId}")]

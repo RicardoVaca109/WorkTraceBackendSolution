@@ -18,6 +18,11 @@ public class StatusController(IStatusService statusService) : ControllerBase
     }
 
     [Authorize]
+    [HttpGet]
+    public async Task<StatusInformationResponse> GetById(string id) =>
+        await statusService.GeyByIdAsync(id);
+
+    [Authorize]
     [HttpPost]
     public async Task<StatusInformationResponse> Create(CreateStatusRequest request) =>
         await statusService.CreateStatusAsync(request);
