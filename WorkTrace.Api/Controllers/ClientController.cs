@@ -19,7 +19,7 @@ public class ClientController(IClientService clientService) : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<ClientInformationResponse?> GetById(string id) =>
+    public async Task<ClientInformationResponse> GetById(string id) =>
         await clientService.GetByIdAsync(id);
 
     [Authorize]

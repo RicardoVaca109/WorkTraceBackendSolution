@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson.Serialization.IdGenerators;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.Services;
-using WorkTrace.Logic.Services;
 
 namespace WorkTrace.Api.Controllers;
 

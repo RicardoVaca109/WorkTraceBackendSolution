@@ -1,8 +1,4 @@
-﻿
-
-using System.Globalization;
-
-namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
+﻿namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 
 public class ClientHistoryResponse
 {
