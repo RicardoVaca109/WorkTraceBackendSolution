@@ -19,7 +19,7 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
 
         var pipeline = Collection.Aggregate()
             .Match(a => a.Client == clientObjectId)
-            .SortByDescending(a => a.Date)
+            .SortByDescending(a => a.AssignedDate)
             .Lookup("services", "Service", "_id", "ServiceInfo")
             .Lookup("status", "Status", "_id", "StatusInfo")
             .Lookup("users", "Users", "_id", "UserInfo")

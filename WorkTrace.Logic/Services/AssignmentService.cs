@@ -49,6 +49,23 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         return mapResult;
     }
 
+    public async Task<AssignmentResponse> UpdateAssignmentAsync(string id, UpdateAssignmentWebRequest request)
+    {
+        var assignment = await _assignmentRepository.GetAsync(id) ?? throw new Exception("Assignment not found");
+
+        if (!string.IsNullOrEmpty(request.Address))
+        {
+            assignment.DestinationLocation = await _geocodingService.GetGeoPointAsync(request.Address);
+        }
+
+        // Aplicar cambios usando AutoMapper (actualización parcial)
+        _mapper.Map(request, assignment);
+
+        await _assignmentRepository.UpdateAsync(id, assignment);
+
+        return _mapper.Map<AssignmentResponse>(assignment);
+    }
+
     public async Task ValidateExistance(CreateAssignmentRequest assignmentRequest)
     {
         var client = await _clientRepository.GetAsync(assignmentRequest.Client);
@@ -65,8 +82,5 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             var user = await _userRepository.GetAsync(userId);
             if (user == null) throw new Exception($"User with ID {userId} does not exist");
         }
-
     }
-
-
 }

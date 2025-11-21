@@ -9,7 +9,7 @@ public class Assignment : BaseModel
     public ObjectId Service { get; set; }
     public ObjectId Client { get; set; }
     public ObjectId Status { get; set; }
-    public DateTime Date { get; set; }
+    public DateTime AssignedDate { get; set; }
     public DateTime? CheckIn { get; set; }
     public DateTime? CheckOut { get; set; }
     public string Address { get; set; }

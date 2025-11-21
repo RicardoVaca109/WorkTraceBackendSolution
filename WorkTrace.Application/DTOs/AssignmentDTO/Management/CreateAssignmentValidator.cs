@@ -29,7 +29,7 @@ public class CreateAssignmentValidator : AbstractValidator<CreateAssignmentReque
             .NotEmpty().WithMessage("Address is required.")
             .MinimumLength(5).WithMessage("Address must have at least 5 characters.");
 
-        RuleFor(x => x.Date)
+        RuleFor(x => x.AssignedDate)
             .NotEmpty().WithMessage("Date is required.")
             .GreaterThan(DateTime.MinValue);
 

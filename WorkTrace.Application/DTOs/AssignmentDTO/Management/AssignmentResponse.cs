@@ -8,7 +8,8 @@ public class AssignmentResponse
     public string Service { get; set; }
     public string Client { get; set; }
     public string Status { get; set; }
-    public DateTime Date { get; set; }
+    public string AssignedDate { get; set; }
+    public string AssignedTime { get; set; }
     public string Address { get; set; }
     public GeoPoint? DestinationLocation { get; set; }
     public string CreatedByUser { get; set; }

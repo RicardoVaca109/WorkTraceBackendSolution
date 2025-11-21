@@ -6,7 +6,7 @@ public class CreateAssignmentRequest
     public string Service { get; set; }
     public string Client { get; set; }
     public string Status { get; set; }
-    public DateTime Date { get; set; }
+    public DateTime AssignedDate { get; set; }
     public string Address { get; set; }
     public string CreatedByUser { get; set; }
 }

@@ -7,6 +7,7 @@ public interface IAssignmentService
     Task<AssignmentResponse> CreateAssigmentAdminAsync(CreateAssignmentRequest assignmentRequest);
     Task<List<AssignmentResponse>> GetAllAsync();
     Task<AssignmentResponse> GetByIdAsync(string id);
+    Task<AssignmentResponse> UpdateAssignmentAsync(string id, UpdateAssignmentWebRequest request);
     Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string cliendId);
     Task ValidateExistance(CreateAssignmentRequest assignmentRequest);
 }
