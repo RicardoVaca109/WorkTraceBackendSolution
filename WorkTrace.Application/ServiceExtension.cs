@@ -19,6 +19,7 @@ public static class ServiceExtension
         services.AddFluentValidationAutoValidation()
         //Assignment Validations
                 .AddValidatorsFromAssemblyContaining<CreateAssignmentValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateAssignmentWebValidator>()
         //Client Validations
                 .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()

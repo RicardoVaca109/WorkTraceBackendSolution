@@ -15,6 +15,5 @@ public class CreateStatusValidator : AbstractValidator<CreateStatusRequest>
         RuleFor(x => x.IsActive)
             .NotEmpty()
             .Must(value => value == true || value == false);
-
     }
 }

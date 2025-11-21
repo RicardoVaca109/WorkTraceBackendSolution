@@ -1,6 +1,5 @@
 ﻿using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
-using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.Services;
 

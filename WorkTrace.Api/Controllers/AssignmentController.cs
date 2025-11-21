@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson.Serialization.IdGenerators;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.Services;
-using WorkTrace.Logic.Services;
 
 namespace WorkTrace.Api.Controllers;
 
@@ -31,6 +29,14 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [HttpGet]
     public async Task<AssignmentResponse> GetById(string id) =>
         await assignmentService.GetByIdAsync(id);
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<AssignmentResponse>> UpdateAssignment(string id, [FromBody] UpdateAssignmentWebRequest request)
+    {
+        var result = await assignmentService.UpdateAssignmentAsync(id, request);
+        return Ok(result);
+    }
 
     [Authorize]
     [HttpGet("{clientId}")]
