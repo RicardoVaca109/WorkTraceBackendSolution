@@ -17,7 +17,13 @@ public class AssignmentProfile : Profile
             .ForMember(dest => dest.Users, opt => opt.MapFrom(src => src.Users.Select(ObjectId.Parse).ToList()))
             .ForMember(dest => dest.DestinationLocation, opt => opt.Ignore());
 
-        CreateMap<UpdateAssignmentMobileRequest, Assignment>();
+        CreateMap<UpdateAssignmentMobileRequest, Assignment>()
+            .ForMember(dest => dest.CheckIn, opt => opt.Condition(src => src.CheckIn.HasValue))
+            .ForMember(dest => dest.CheckOut, opt => opt.Condition(src => src.CheckOut.HasValue))
+            .ForMember(dest => dest.CurrentLocation, opt => opt.Condition(src => src.CurrentLocation != null))
+            .ForMember(dest => dest.Comment, opt => opt.Condition(src => !string.IsNullOrEmpty(src.Comment)))
+            .ForMember(dest => dest.StepsProgress, opt => opt.Condition(src => src.StepsProgress != null && src.StepsProgress.Any()))
+            .ForMember(dest => dest.MediaFiles, opt => opt.Condition(src => src.MediaFiles != null && src.MediaFiles.Any()));
 
         CreateMap<UpdateAssignmentWebRequest, Assignment>()
             .ForMember(dest => dest.Client, opt => opt.Condition(src => !string.IsNullOrEmpty(src.Client)))

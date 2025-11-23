@@ -1,5 +1,4 @@
-﻿
-using WorkTrace.Data.Models;
+﻿using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 

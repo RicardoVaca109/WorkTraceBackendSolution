@@ -33,7 +33,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         return response;
     }
 
-    public async Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string cliendId)
     public async Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string clientId)
     {
         var rawData = await _assignmentRepository.GetClientAssignmentRawAsync(clientId);
@@ -76,7 +75,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             assignment.DestinationLocation = await _geocodingService.GetGeoPointAsync(request.Address);
         }
 
-        // Aplicar cambios usando AutoMapper (actualización parcial)
         _mapper.Map(request, assignment);
 
         await _assignmentRepository.UpdateAsync(id, assignment);
