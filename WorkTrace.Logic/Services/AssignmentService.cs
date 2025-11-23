@@ -34,18 +34,36 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     }
 
     public async Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string cliendId)
+    public async Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string clientId)
     {
-        var rawData = await _assignmentRepository.GetClientAssignmentRawAsync(cliendId);
+        var rawData = await _assignmentRepository.GetClientAssignmentRawAsync(clientId);
 
-        var mapResult = rawData.Select(doc => new ClientHistoryResponse
+        var mapResult = rawData.Select(doc =>
+        {
+            DateTime assigned = doc.Contains("AssignedDate") && !doc["AssignedDate"].IsBsonNull
+                ? doc["AssignedDate"].ToUniversalTime()
+                : DateTime.MinValue;
+
+            DateTime? co = null;
+            if (doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull)
+                co = doc["CheckOut"].ToUniversalTime();
+
+            return new ClientHistoryResponse
         {
             Service = doc["Service"].AsString,
-            Date = doc.Contains("AssignedDate") && !doc["AssignedDate"].IsBsonNull ? doc["AssignedDate"].ToUniversalTime() : DateTime.MinValue,
-            CheckOut = doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull ? doc["CheckOut"].ToUniversalTime() : null,
+                Date = assigned == DateTime.MinValue ? "" : assigned.ToString("dd-MM-yyyy"),
+                Time = assigned == DateTime.MinValue ? "" : assigned.ToString("HH:mm"),
+                CheckOutDate = co == null ? "" : co.Value.ToString("dd-MM-yyyy"),
+                CheckOutTime = co == null ? "" : co.Value.ToString("HH:mm"),
             Status = doc["Status"].AsString,
             Address = doc["Address"].AsString,
-            Users = [.. doc["Users"].AsBsonArray.Select(u => u.AsString)],
-        }).ToList();
+                Users = doc["Users"]
+                    .AsBsonArray
+                    .Select(u => u.AsString)
+                    .ToList()
+            };
+        })
+        .ToList();
         return mapResult;
     }
 
