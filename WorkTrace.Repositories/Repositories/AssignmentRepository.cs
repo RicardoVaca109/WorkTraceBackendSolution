@@ -27,7 +27,7 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
             {
 
                 { "Service", new BsonDocument("$arrayElemAt", new BsonArray { "$ServiceInfo.Name", 0 }) },
-                { "Date", "$Date" },
+                { "AssignedDate", "$AssignedDate" },
                 { "CheckOut", "$CheckOut" },
                 { "Status", new BsonDocument("$arrayElemAt", new BsonArray { "$StatusInfo.Name", 0 }) },
                 { "Address", "$Address" },
