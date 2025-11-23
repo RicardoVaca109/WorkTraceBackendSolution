@@ -14,6 +14,7 @@ public class ServiceProfile : Profile
         CreateMap<UpdateInstallationStepRequest, InstallationStep>();
         CreateMap<UpdateServiceRequest, Service>();
 
+        CreateMap<InstallationStepResponse, InstallationStep>();
         CreateMap<Service, ServiceInformationResponse>()
                 .ForMember(dest => dest.InstallationSteps, opt => opt.Ignore());
         CreateMap<InstallationStep, InstallationStepResponse>();
