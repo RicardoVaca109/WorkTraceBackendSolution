@@ -37,6 +37,6 @@ public class AssignmentProfile : Profile
 
         CreateMap<Assignment, AssignmentResponse>()
             .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.AssignedDate.ToString("dd-MM-yyyy")))
-            .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("hh:mm")));
+            .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("HH:mm")));
     }
 }

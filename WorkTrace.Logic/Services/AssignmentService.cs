@@ -40,7 +40,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         var mapResult = rawData.Select(doc => new ClientHistoryResponse
         {
             Service = doc["Service"].AsString,
-            Date = doc["Date"].ToUniversalTime(),
+            Date = doc.Contains("AssignedDate") && !doc["AssignedDate"].IsBsonNull ? doc["AssignedDate"].ToUniversalTime() : DateTime.MinValue,
             CheckOut = doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull ? doc["CheckOut"].ToUniversalTime() : null,
             Status = doc["Status"].AsString,
             Address = doc["Address"].AsString,
