@@ -9,37 +9,37 @@ public class UpdateAssignmentWebValidator : AbstractValidator<UpdateAssignmentWe
 
         // Validar lista de usuarios si se envía
         RuleForEach(x => x.Users)
-            .Must(BeValidObjectId).WithMessage("User Id must be a valid ObjectId.");
+            .Must(BeValidObjectId).WithMessage("El Id del Usuario debe ser válido");
 
         // Validar Service si se envía
         RuleFor(x => x.Service)
             .Must(BeValidObjectId).When(x => !string.IsNullOrEmpty(x.Service))
-            .WithMessage("Service Id must be a valid ObjectId.");
+            .WithMessage("El Id del Servicio debe ser válido");
 
         // Validar Client si se envía
         RuleFor(x => x.Client)
             .Must(BeValidObjectId).When(x => !string.IsNullOrEmpty(x.Client))
-            .WithMessage("Client Id must be a valid ObjectId.");
+            .WithMessage("El Id del Cliente debe ser válido");
 
         // Validar Status si se envía
         RuleFor(x => x.Status)
             .Must(BeValidObjectId).When(x => !string.IsNullOrEmpty(x.Status))
-            .WithMessage("Status Id must be a valid ObjectId.");
+            .WithMessage("El Id del Status debe ser válido");
 
         // Validar Address si se envía
         RuleFor(x => x.Address)
             .MinimumLength(5).When(x => !string.IsNullOrEmpty(x.Address))
-            .WithMessage("Address must have at least 5 characters.");
+            .WithMessage("La dirección debe tener más 5 letras");
 
         // Validar AssignedDate si se envía
         RuleFor(x => x.AssignedDate)
             .GreaterThan(DateTime.MinValue).When(x => x.AssignedDate.HasValue)
-            .WithMessage("AssignedDate must be a valid date.");
+            .WithMessage("La fecha de Asignación debe ser una fecha válida.");
 
         // Validar CreatedByUser si se envía
         RuleFor(x => x.CreatedByUser)
             .Must(BeValidObjectId).When(x => !string.IsNullOrEmpty(x.CreatedByUser))
-            .WithMessage("CreatedByUser must be a valid ObjectId.");
+            .WithMessage("El Id del Usuario que creo la asignación debe ser válido");
     }
 
     private bool BeValidObjectId(string id)

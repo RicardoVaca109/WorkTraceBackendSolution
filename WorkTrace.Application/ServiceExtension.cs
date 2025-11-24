@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
+using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Application.DTOs.StatusDTO.Information;
@@ -20,6 +21,11 @@ public static class ServiceExtension
         //Assignment Validations
                 .AddValidatorsFromAssemblyContaining<CreateAssignmentValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateAssignmentWebValidator>()
+                .AddValidatorsFromAssemblyContaining<FinishAssignmentValidator>()
+                .AddValidatorsFromAssemblyContaining<StartAssignmentValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateAssignmentMobileValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateLocationValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateProgressValidator>()
         //Client Validations
                 .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()

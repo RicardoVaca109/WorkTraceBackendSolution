@@ -7,35 +7,35 @@ public class CreateAssignmentValidator : AbstractValidator<CreateAssignmentReque
     public CreateAssignmentValidator()
     {
         RuleFor(x => x.Users)
-            .NotEmpty().WithMessage("Users list cannot be empty.");
+            .NotEmpty().WithMessage("No se puede agendar una Asignación sin Usuarios");
 
         RuleForEach(x => x.Users)
-            .NotEmpty().WithMessage("User Id cannot be empty.")
-            .Must(BeValidObjectId).WithMessage("User Id must be a valid ObjectId.");
+            .NotEmpty().WithMessage("El Id del Usuario no puede ser vacío")
+            .Must(BeValidObjectId).WithMessage("El Id de un Usuario debe ser válido");
 
         RuleFor(x => x.Service)
-            .NotEmpty().WithMessage("Service Id is required.")
-            .Must(BeValidObjectId).WithMessage("Service Id must be a valid ObjectId.");
+            .NotEmpty().WithMessage("El Id del Servicio no puede ser vacío")
+            .Must(BeValidObjectId).WithMessage("El Id de un Servicio debe ser válido");
 
         RuleFor(x => x.Client)
-            .NotEmpty().WithMessage("Client Id is required.")
-            .Must(BeValidObjectId).WithMessage("Client Id must be a valid ObjectId.");
+            .NotEmpty().WithMessage("El Id de un Cliente no puede ser vacío")
+            .Must(BeValidObjectId).WithMessage("El Id de un Cliente debe ser válido");
 
         RuleFor(x => x.Status)
-            .NotEmpty().WithMessage("Status Id is required.")
-            .Must(BeValidObjectId).WithMessage("Status Id must be a valid ObjectId.");
+            .NotEmpty().WithMessage("El Id del estatus es requerido")
+            .Must(BeValidObjectId).WithMessage("El Status debe tener un Id Válido");
 
         RuleFor(x => x.Address)
-            .NotEmpty().WithMessage("Address is required.")
-            .MinimumLength(5).WithMessage("Address must have at least 5 characters.");
+            .NotEmpty().WithMessage("La ubicación es requerida")
+            .MinimumLength(5).WithMessage("La ubicación tiene que tener más de 5 carácteres");
 
         RuleFor(x => x.AssignedDate)
-            .NotEmpty().WithMessage("Date is required.")
+            .NotEmpty().WithMessage("La Fecha donde se dará el Servicio es obligatoria")
             .GreaterThan(DateTime.MinValue);
 
         RuleFor(x => x.CreatedByUser)
-            .NotEmpty().WithMessage("CreatedByUser is required.")
-            .Must(BeValidObjectId).WithMessage("CreatedByUser must be a valid ObjectId.");
+            .NotEmpty().WithMessage("El Usuario que creo la Asignación debe ser Administrador validado.")
+            .Must(BeValidObjectId).WithMessage("El Id del Usuario que creo la Asignación debe existir.");
     }
     private bool BeValidObjectId(string id)
     {

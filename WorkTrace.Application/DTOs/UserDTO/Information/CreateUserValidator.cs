@@ -23,7 +23,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
             .Length(8, 16);
         RuleFor(x => x.Role)
             .Must(x => Enum.IsDefined(typeof(Enums.UserRoles), x))
-            .WithMessage("'Role' must be a valid value.");
+            .WithMessage("'Role' debe ser un valor válido");
         RuleFor(x => x.IsActive)
             .NotEmpty()
             .Must(value => value == true || value == false);

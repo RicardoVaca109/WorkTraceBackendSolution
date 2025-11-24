@@ -40,7 +40,7 @@ public class StatusController(IStatusService statusService) : ControllerBase
     public async Task<IActionResult> DeactivateStatus(string id)
     {
         var succes = await statusService.SetStatusInactive(id);
-        if (!succes) return NotFound("Status Not Found or Inactive");
-        return Ok("Status set to inactive succesfully");
+        if (!succes) return NotFound("Status No se encontró o esta Inactivo");
+        return Ok("Ahora Status esta Inactivo");
     }
 }

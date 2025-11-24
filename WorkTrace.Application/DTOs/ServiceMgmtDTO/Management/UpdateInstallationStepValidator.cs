@@ -9,7 +9,7 @@ public class UpdateInstallationStepValidator : AbstractValidator<UpdateInstallat
         RuleFor(x => x.Steps)
             .NotEmpty()
             .GreaterThan(0)
-            .WithMessage("Step number must be greater than 0");
+            .WithMessage("El número del Paso debe ser mayo que 0");
 
         RuleFor(x => x.Description)
             .NotEmpty()

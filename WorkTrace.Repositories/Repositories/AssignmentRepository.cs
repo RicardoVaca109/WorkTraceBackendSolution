@@ -35,4 +35,16 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
             });
         return await pipeline.ToListAsync();
     }
+
+    public async Task<List<Assignment>> GetAssignmentByUserAndDateRangeAsync(string userId, DateTime start, DateTime end)
+    {
+        var userObjectId = new ObjectId(userId);
+
+        var filter = Builders<Assignment>.Filter.And(
+            Builders<Assignment>.Filter.AnyEq(a => a.Users, userObjectId),
+            Builders<Assignment>.Filter.Gte(a => a.AssignedDate, start),
+            Builders<Assignment>.Filter.Lte(a => a.AssignedDate, end)
+        );
+        return await Collection.Find(filter).ToListAsync();
+    }
 }

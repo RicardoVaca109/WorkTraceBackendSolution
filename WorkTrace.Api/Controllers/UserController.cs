@@ -48,7 +48,7 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<IActionResult> DeactivateUser(string id)
     {
         var succes = await userService.SetInactiveUser(id);
-        if (!succes) return NotFound("User Not Found or Inactive");
-        return Ok("User set to inactive succesfully");
+        if (!succes) return NotFound("Usuario no encontrado o Inactivo");
+        return Ok("Ahora Usuario esta Inactivo");
     }
 }

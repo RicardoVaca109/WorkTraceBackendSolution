@@ -16,7 +16,7 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
 
     public async Task<ClientInformationResponse> GetByIdAsync(string id)
     {
-        var clientById = await _clientRepository.GetAsync(id) ?? throw new Exception("User not Found");
+        var clientById = await _clientRepository.GetAsync(id) ?? throw new Exception("Usuario no encontrado.");
         var response = _mapper.Map<ClientInformationResponse>(clientById);
         return response;
     }
@@ -24,7 +24,7 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
     public async Task<ClientInformationResponse> CreateClientAsync(CreateClientRequest clientCreate)
     {
         var existingClient = await _clientRepository.GetByDocumentNumberAsync(clientCreate.DocumentNumber);
-        if (existingClient != null) throw new Exception("There is already a client with this document number");
+        if (existingClient != null) throw new Exception("Ya existe un cliente con este número de documento.");
 
         var clientToDatabase = _mapper.Map<Client>(clientCreate);
 
@@ -35,7 +35,7 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
     public async Task<ClientInformationResponse> UpdateClientAsync(string id, UpdateClientRequest client)
     {
         var clientToUpdate = await _clientRepository.GetAsync(id);
-        if (clientToUpdate == null) throw new Exception("Client not found");
+        if (clientToUpdate == null) throw new Exception("Cliente no encontrado.");
 
         clientToUpdate.FullName = string.IsNullOrWhiteSpace(client.FullName) ? clientToUpdate.FullName : client.FullName;
         clientToUpdate.DocumentNumber = string.IsNullOrWhiteSpace(client.DocumentNumber) ? clientToUpdate.DocumentNumber : client.DocumentNumber;
