@@ -1,6 +1,6 @@
 ﻿using WorkTrace.Data.Models;
 
-namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
+namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 
 public class UpdateAssignmentMobileRequest
 {

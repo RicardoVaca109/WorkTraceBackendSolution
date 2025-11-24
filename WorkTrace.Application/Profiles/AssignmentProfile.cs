@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
+using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.Profiles;
@@ -44,5 +45,11 @@ public class AssignmentProfile : Profile
         CreateMap<Assignment, AssignmentResponse>()
             .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.AssignedDate.ToString("dd-MM-yyyy")))
             .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("HH:mm")));
+
+        CreateMap<Assignment, AssignmentMobileResponse>()
+            .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service.ToString()))
+            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client.ToString()))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
     }
 }

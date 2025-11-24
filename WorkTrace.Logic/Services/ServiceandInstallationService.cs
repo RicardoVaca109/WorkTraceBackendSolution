@@ -34,7 +34,7 @@ public class ServiceandInstallationService(IInstallationStepRepository _installa
     {
         var serviceById = await _serviceRepository.GetAsync(id);
         if (serviceById == null)
-            throw new Exception("Service not found");
+            throw new Exception("Servicio no encontrado.");
 
         var response = _mapper.Map<ServiceInformationResponse>(serviceById);
         response.InstallationSteps = new List<InstallationStepResponse>();
@@ -79,7 +79,7 @@ public class ServiceandInstallationService(IInstallationStepRepository _installa
     {
         var existingService = await _serviceRepository.GetAsync(id);
         if (existingService == null)
-            throw new Exception("Service not found");
+            throw new Exception("Servicio no encontrado.");
 
         existingService.Name = request.Name;
         existingService.Description = request.Description;

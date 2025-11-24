@@ -20,7 +20,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
     {
         var userById = await _userRepository.GetAsync(id);
         if (userById == null)
-            throw new Exception("User not Found");
+            throw new Exception("Usuario no Encontrado");
 
         var response = _mapper.Map<UserInformationResponse>(userById);
         return response;
@@ -31,9 +31,9 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         var existingUsers = await _userRepository.GetByDocumentNumberAndEmailAsync(userCreate.DocumentNumber, userCreate.Email);
 
         if (existingUsers.Any(u => u.DocumentNumber == userCreate.DocumentNumber))
-            throw new Exception("There is already a user with this document number");
+            throw new Exception("Ya un Usuario en el sistema con este número de Documento");
         if (existingUsers.Any(u => u.Email == userCreate.Email))
-            throw new Exception("There is already a user with this email");
+            throw new Exception("Ya hay un usuario con este correo.");
 
         userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
         userCreate.IsActive = true;
@@ -48,12 +48,12 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
     {
         var user = await _userRepository.GetByEmailAsync(email);
         if (user == null)
-            throw new Exception("Wrong Credentials");
+            throw new Exception("Credenciales Incorrectas");
 
         var isValidPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
 
         if (!isValidPassword)
-            throw new Exception("Wrong Credentials");
+            throw new Exception("Credenciales Incorrectas");
 
         var token = _jwtService.GenerateToken(user);
 
@@ -67,7 +67,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
     public async Task<UserInformationResponse> UpdateAsync(string id, UpdateUserRequest user)
     {
         var usertoUpdate = await _userRepository.GetAsync(id);
-        if (usertoUpdate == null) throw new Exception("User not Found");
+        if (usertoUpdate == null) throw new Exception("Usuario no encontrado");
 
         usertoUpdate.FullName = string.IsNullOrWhiteSpace(user.FullName) ? usertoUpdate.FullName : user.FullName;
         usertoUpdate.Email = string.IsNullOrWhiteSpace(user.Email) ? usertoUpdate.Email : user.Email;
@@ -86,7 +86,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
     public async Task<bool> SetInactiveUser(string userId)
     {
         var userFilter = await _userRepository.GetAsync(userId);
-        if (userFilter == null) throw new Exception("User Not Found");
+        if (userFilter == null) throw new Exception("Usuario no encontrado");
 
         if (!userFilter.IsActive) return false;
 

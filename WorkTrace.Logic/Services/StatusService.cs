@@ -16,7 +16,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
 
     public async Task<StatusInformationResponse> GeyByIdAsync(string id)
     {
-        var statusById = await _statusRepository.GetAsync(id) ?? throw new Exception("Status not found");
+        var statusById = await _statusRepository.GetAsync(id) ?? throw new Exception("Status no Encontrado");
         var response = _mapper.Map<StatusInformationResponse>(statusById);
         return response;
     }
@@ -24,7 +24,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
     public async Task<StatusInformationResponse> CreateStatusAsync(CreateStatusRequest statusCreate)
     {
         var existingStatus = await _statusRepository.GetByName(statusCreate.Name);
-        if (existingStatus != null) throw new Exception("There is already an Status with that name");
+        if (existingStatus != null) throw new Exception("Ya hay un Status con este nombre");
 
         var statusToDatabase = _mapper.Map<Status>(statusCreate);
 
@@ -35,7 +35,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
     public async Task<StatusInformationResponse> UpdateStatusAsync(string id, UpdateStatusRequest status)
     {
         var statusToUpdate = await _statusRepository.GetAsync(id);
-        if (statusToUpdate == null) throw new Exception("Status not Found");
+        if (statusToUpdate == null) throw new Exception("Status no Encontrado");
 
         statusToUpdate.Name = string.IsNullOrWhiteSpace(status.Name) ? statusToUpdate.Name : status.Name;
         statusToUpdate.Description = string.IsNullOrWhiteSpace(status.Description) ? statusToUpdate.Description : status.Description;
@@ -49,7 +49,7 @@ public class StatusService(IStatusRepository _statusRepository, IMapper _mapper)
     public async Task<bool> SetStatusInactive(string statusId)
     {
         var statusFilter = await _statusRepository.GetAsync(statusId);
-        if (statusFilter == null) throw new Exception("Status Not Found.");
+        if (statusFilter == null) throw new Exception("Status no Encontrado");
 
         if (!statusFilter.IsActive) return false;
 
