@@ -84,11 +84,36 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     }
 
     //Mobile
-    public async Task<List<AssignmentMobileResponse>> GetAssigmentByUserandRangeAsync(string userId, DateTime start, DateTime end)
+    public async Task<List<AssigmentMobileDashboardResponse>> GetAssigmentByUserandRangeAsync(
+    string userId, DateTime start, DateTime end)
     {
         var data = await _assignmentRepository.GetAssignmentByUserAndDateRangeAsync(userId, start, end);
-        return _mapper.Map<List<AssignmentMobileResponse>>(data);
+
+        var result = new List<AssigmentMobileDashboardResponse>();
+
+        foreach (var assignment in data)
+        {
+            var client = await _clientRepository.GetAsync(assignment.Client.ToString());
+            var service = await _serviceRepository.GetAsync(assignment.Service.ToString());
+            var createdBy = await _userRepository.GetAsync(assignment.CreatedByUser.ToString());
+            var status = await _statusRepository.GetAsync(assignment.Status.ToString());
+
+            var dto = new AssigmentMobileDashboardResponse
+            {
+                Id = assignment.Id.ToString(),
+                Client = client?.FullName ?? "Sin nombre",
+                Service = service?.Name ?? "Sin nombre",
+                Status = status?.Name ?? "Sin nombre",
+                Address = assignment.Address,
+                AssignedDate = assignment.AssignedDate.ToString("dd-MM-yyyy"),
+                AssignedTime = assignment.AssignedDate.ToString("HH:mm"),
+                CreatedByUser = createdBy?.FullName ?? "N/A"
+            };
+            result.Add(dto);
+        }
+        return result;
     }
+
 
     public async Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssigmentRequest request)
     {

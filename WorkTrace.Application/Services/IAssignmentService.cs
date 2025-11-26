@@ -11,7 +11,7 @@ public interface IAssignmentService
     Task<AssignmentResponse> UpdateAssignmentAsync(string id, UpdateAssignmentWebRequest request);
     Task<List<ClientHistoryResponse>> GetClientHistoryAsync(string cliendId);
     Task ValidateExistance(CreateAssignmentRequest assignmentRequest);
-    Task<List<AssignmentMobileResponse>> GetAssigmentByUserandRangeAsync(string userId, DateTime start, DateTime end); 
+    Task<List<AssigmentMobileDashboardResponse>> GetAssigmentByUserandRangeAsync(string userId, DateTime start, DateTime end); 
     Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssigmentRequest request);
     Task<AssignmentMobileResponse> FinishAssignmentAsync(string id, FinishAssignmentRequest request);
     Task<AssignmentMobileResponse> UpdateLocationAsync(string id, UpdateLocationRequest request);

@@ -51,5 +51,9 @@ public class AssignmentProfile : Profile
             .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client.ToString()))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
+        CreateMap<Assignment, AssigmentMobileDashboardResponse>()
+            .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.AssignedDate.ToString("dd-MM-yyyy")))
+            .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("HH:mm")));
     }
 }
