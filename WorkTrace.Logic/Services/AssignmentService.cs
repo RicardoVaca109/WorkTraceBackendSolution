@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MongoDB.Bson.Serialization;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.Repositories;
@@ -81,6 +82,60 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         await _assignmentRepository.UpdateAsync(id, assignment);
 
         return _mapper.Map<AssignmentResponse>(assignment);
+    }
+
+    public async Task<List<AssignmentListResponse>> GetAssignmentsForListAsync(string userId)
+    {
+        var raw = await _assignmentRepository.GetAssignmentsListByUserRawAsync(userId);
+
+        var list = raw.Select(x => new AssignmentListResponse
+        {
+            Id = x["_id"].ToString(),
+            Client = x.GetValue("Client").AsString,
+            Service = x.GetValue("Service").AsString,
+            AssignedDate = x["AssignedDate"].ToUniversalTime().ToString("dd-MM-yyyy"),
+            AssignedTime = x["AssignedDate"].ToUniversalTime().ToString("HH:mm")
+        }).ToList();
+
+        return list;
+    }
+
+    public async Task<AssignmentTrackingResponse?> GetAssignmentTrackingAsync(string assignmentId)
+    {
+        var doc = await _assignmentRepository.GetAssignmentTrackingRawAsync(assignmentId);
+        if (doc == null) return null;
+
+        return new AssignmentTrackingResponse
+        {
+            Id = doc["_id"].ToString(),
+            Client = doc.GetValue("Client").AsString,
+            Service = doc.GetValue("Service").AsString,
+            Address = doc.GetValue("Address").AsString,
+
+            CheckInDate = doc["CheckIn"].IsBsonNull
+                ? null
+                : doc["CheckIn"].ToUniversalTime().ToString("dd-MM-yyyy"),
+
+            CheckInTime = doc["CheckIn"].IsBsonNull
+                ? null
+                : doc["CheckIn"].ToUniversalTime().ToString("HH:mm"),
+
+            CheckOutDate = doc["CheckOut"].IsBsonNull
+                ? null
+                : doc["CheckOut"].ToUniversalTime().ToString("dd-MM-yyyy"),
+
+            CheckOutTime = doc["CheckOut"].IsBsonNull
+                ? null
+                : doc["CheckOut"].ToUniversalTime().ToString("HH:mm"),
+
+            CurrentLocation = doc.GetValue("CurrentLocation").IsBsonNull
+                ? null
+                : BsonSerializer.Deserialize<GeoPoint>(doc["CurrentLocation"].AsBsonDocument),
+
+            DestinationLocation = doc.GetValue("DestinationLocation").IsBsonNull
+                ? null
+                : BsonSerializer.Deserialize<GeoPoint>(doc["DestinationLocation"].AsBsonDocument)
+        };
     }
 
     //Mobile

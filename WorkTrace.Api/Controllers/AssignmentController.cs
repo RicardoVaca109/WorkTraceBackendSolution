@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.Services;
+using WorkTrace.Logic.Services;
 
 namespace WorkTrace.Api.Controllers;
 
@@ -44,5 +45,24 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     {
         var clientHistory = await assignmentService.GetClientHistoryAsync(clientId);
         return Ok(clientHistory);
+    }
+
+    [Authorize]
+    [HttpGet("by-user/{userId}")]
+    public async Task<ActionResult<List<AssignmentListResponse>>> GetAssignmentsList(string userId)
+    {
+        var result = await assignmentService.GetAssignmentsForListAsync(userId);
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet("tracking/{assignmentId}")]
+    public async Task<ActionResult<AssignmentTrackingResponse>> GetAssignmentTracking(string assignmentId)
+    {
+        var result = await assignmentService.GetAssignmentTrackingAsync(assignmentId);
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
     }
 }

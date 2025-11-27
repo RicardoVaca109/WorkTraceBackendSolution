@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Data;
 using WorkTrace.Data.Models;
@@ -46,5 +47,115 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
             Builders<Assignment>.Filter.Lte(a => a.AssignedDate, end)
         );
         return await Collection.Find(filter).ToListAsync();
+    }
+
+    public async Task<List<BsonDocument>> GetAssignmentsListByUserRawAsync(string userId)
+    {
+        var userObjectId = new ObjectId(userId);
+
+        var now = DateTime.UtcNow;
+
+        var pipeline = new[]
+        {
+        // match por usuario
+        new BsonDocument("$match",
+            new BsonDocument("Users", userObjectId)
+        ),
+        // calcular distancia de fecha
+        new BsonDocument("$addFields",
+            new BsonDocument("Distance",
+                new BsonDocument("$abs",
+                    new BsonArray
+                    {
+                        new BsonDocument("$subtract", new BsonArray { "$AssignedDate", now })
+                    }
+                )
+            )
+        ),
+        // lookup client
+        new BsonDocument("$lookup",
+            new BsonDocument
+            {
+                { "from", "clients" },
+                { "localField", "Client" },
+                { "foreignField", "_id" },
+                { "as", "ClientInfo" }
+            }
+        ),
+        // lookup service
+        new BsonDocument("$lookup",
+            new BsonDocument
+            {
+                { "from", "services" },
+                { "localField", "Service" },
+                { "foreignField", "_id" },
+                { "as", "ServiceInfo" }
+            }
+        ),
+        // campos finales
+        new BsonDocument("$project",
+            new BsonDocument
+            {
+                { "_id", 1 },
+                { "Client", new BsonDocument("$arrayElemAt", new BsonArray { "$ClientInfo.FullName", 0 }) },
+                { "Service", new BsonDocument("$arrayElemAt", new BsonArray { "$ServiceInfo.Name", 0 }) },
+                { "AssignedDate", 1 },
+                { "Distance", 1 }
+            }
+        ),
+
+        // ordenar por fecha más cercana
+        new BsonDocument("$sort", new BsonDocument { { "Distance", 1 } })
+    };
+
+        return await Collection.Aggregate<BsonDocument>(pipeline).ToListAsync();
+    }
+
+    public async Task<BsonDocument?> GetAssignmentTrackingRawAsync(string assignmentId)
+    {
+        var id = new ObjectId(assignmentId);
+
+        var pipeline = new[]
+        {
+        new BsonDocument("$match",
+            new BsonDocument("_id", id)
+        ),
+
+        new BsonDocument("$lookup",
+            new BsonDocument
+            {
+                { "from", "clients" },
+                { "localField", "Client" },
+                { "foreignField", "_id" },
+                { "as", "ClientInfo" }
+            }
+        ),
+
+        new BsonDocument("$lookup",
+            new BsonDocument
+            {
+                { "from", "services" },
+                { "localField", "Service" },
+                { "foreignField", "_id" },
+                { "as", "ServiceInfo" }
+            }
+        ),
+
+        new BsonDocument("$project",
+            new BsonDocument
+            {
+                { "_id", 1 },
+                { "Client", new BsonDocument("$arrayElemAt", new BsonArray { "$ClientInfo.FullName", 0 }) },
+                { "Service", new BsonDocument("$arrayElemAt", new BsonArray { "$ServiceInfo.Name", 0 }) },
+                { "Address", 1 },
+                { "CheckIn", 1 },
+                { "CheckOut", 1 },
+                { "CurrentLocation", 1 },
+                { "DestinationLocation", 1 }
+            }
+        )
+    };
+
+        return await Collection.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
     }
 }

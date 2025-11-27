@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
+using MongoDB.Driver.Linq;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Data.Models;
@@ -53,6 +54,16 @@ public class AssignmentProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
 
         CreateMap<Assignment, AssigmentMobileDashboardResponse>()
+            .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.AssignedDate.ToString("dd-MM-yyyy")))
+            .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("HH:mm")));
+
+        CreateMap<Assignment, AssignmentTrackingResponse>()
+            .ForMember(dest => dest.CheckInDate, opt => opt.MapFrom(src => src.CheckIn.HasValue ? src.CheckIn.Value.ToString("dd-MM-yyyy") : null))
+            .ForMember(dest => dest.CheckInTime, opt => opt.MapFrom(src => src.CheckIn.HasValue ? src.CheckIn.Value.ToString("HH:mm") : null))
+            .ForMember(dest => dest.CheckOutDate, opt => opt.MapFrom(src => src.CheckOut.HasValue ? src.CheckOut.Value.ToString("dd-MM-yyyy") : null))
+            .ForMember(dest => dest.CheckOutTime, opt => opt.MapFrom(src => src.CheckOut.HasValue ? src.CheckOut.Value.ToString("HH:mm") : null));
+
+        CreateMap<Assignment,AssignmentListResponse>()
             .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.AssignedDate.ToString("dd-MM-yyyy")))
             .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src => src.AssignedDate.ToString("HH:mm")));
     }
