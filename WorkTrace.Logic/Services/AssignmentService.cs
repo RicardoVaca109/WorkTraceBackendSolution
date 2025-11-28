@@ -42,12 +42,12 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         var mapResult = rawData.Select(doc =>
         {
             DateTime assigned = doc.Contains("AssignedDate") && !doc["AssignedDate"].IsBsonNull
-                ? doc["AssignedDate"].ToUniversalTime()
+                ? doc["AssignedDate"].ToLocalTime()
                 : DateTime.MinValue;
 
             DateTime? co = null;
             if (doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull)
-                co = doc["CheckOut"].ToUniversalTime();
+                co = doc["CheckOut"].ToLocalTime();
 
             return new ClientHistoryResponse
             {
@@ -78,7 +78,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         }
 
         _mapper.Map(request, assignment);
-
+        
         await _assignmentRepository.UpdateAsync(id, assignment);
 
         return _mapper.Map<AssignmentResponse>(assignment);
@@ -88,13 +88,19 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     {
         var raw = await _assignmentRepository.GetAssignmentsListByUserRawAsync(userId);
 
-        var list = raw.Select(x => new AssignmentListResponse
+        var list = raw.Select(x =>
         {
-            Id = x["_id"].ToString(),
-            Client = x.GetValue("Client").AsString,
-            Service = x.GetValue("Service").AsString,
-            AssignedDate = x["AssignedDate"].ToUniversalTime().ToString("dd-MM-yyyy"),
-            AssignedTime = x["AssignedDate"].ToUniversalTime().ToString("HH:mm")
+            var assignedDate = x["AssignedDate"].ToLocalTime();
+            return new AssignmentListResponse
+            {
+                Id = x["_id"].ToString(),
+                Client = x.GetValue("Client").AsString,
+                Service = x.GetValue("Service").AsString,
+
+                // Ahora enviamos DateTime REAL, no string formateado:
+                AssignedDate = assignedDate,
+                AssignedTime = assignedDate
+            };
         }).ToList();
 
         return list;
@@ -114,19 +120,19 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
             CheckInDate = doc["CheckIn"].IsBsonNull
                 ? null
-                : doc["CheckIn"].ToUniversalTime().ToString("dd-MM-yyyy"),
+                : doc["CheckIn"].ToLocalTime().ToString("dd-MM-yyyy"),
 
             CheckInTime = doc["CheckIn"].IsBsonNull
                 ? null
-                : doc["CheckIn"].ToUniversalTime().ToString("HH:mm"),
+                : doc["CheckIn"].ToLocalTime().ToString("HH:mm"),
 
             CheckOutDate = doc["CheckOut"].IsBsonNull
                 ? null
-                : doc["CheckOut"].ToUniversalTime().ToString("dd-MM-yyyy"),
+                : doc["CheckOut"].ToLocalTime().ToString("dd-MM-yyyy"),
 
             CheckOutTime = doc["CheckOut"].IsBsonNull
                 ? null
-                : doc["CheckOut"].ToUniversalTime().ToString("HH:mm"),
+                : doc["CheckOut"].ToLocalTime().ToString("HH:mm"),
 
             CurrentLocation = doc.GetValue("CurrentLocation").IsBsonNull
                 ? null
@@ -174,6 +180,8 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     {
         var assignment = await _assignmentRepository.GetAsync(id)
             ?? throw new Exception("Asignación no encontrada");
+        if (assignment.CheckIn != null)
+            throw new Exception("La asignación ya fue iniciada.");
 
         assignment.CheckIn = request.CheckIn;
         assignment.CurrentLocation = request.CurrentLocation;
