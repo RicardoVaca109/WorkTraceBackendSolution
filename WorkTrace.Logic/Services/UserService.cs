@@ -1,55 +1,99 @@
-﻿using WorkTrace.Application.DTOs.UserDTO.Login;
+﻿using AutoMapper;
+using MongoDB.Driver;
+using WorkTrace.Application.DTOs.UserDTO.Information;
+using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class UserService(IUserRepository userRepository, IJwtService jwtService) : IUserService
+public class UserService(IUserRepository _userRepository, IJwtService _jwtService, IMapper _mapper) : IUserService
 {
-    public async Task<List<User>> GetAllAsync()
+    public async Task<List<UserInformationResponse>> GetAllAsync()
     {
-        return await userRepository.GetAsync();
+        var systemUsers = await _userRepository.GetAsync();
+        return _mapper.Map<List<UserInformationResponse>>(systemUsers);
     }
 
-    public async Task<User?> GetByIdAsync(string id) //Buscar por Id Especifico 
+    public async Task<UserInformationResponse> GetByIdAsync(string id)
     {
-        return await userRepository.GetAsync(id);
+        var userById = await _userRepository.GetAsync(id);
+        if (userById == null)
+            throw new Exception("Usuario no Encontrado");
+
+        var response = _mapper.Map<UserInformationResponse>(userById);
+        return response;
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<UserInformationResponse> CreateAsync(CreateUserRequest userCreate)
     {
-        var existingUsers = await userRepository.GetByDocumentNumberAndEmailAsync(user.DocumentNumber, user.Email);
+        var existingUsers = await _userRepository.GetByDocumentNumberAndEmailAsync(userCreate.DocumentNumber, userCreate.Email);
 
-        if (existingUsers.Any(u => u.DocumentNumber == user.DocumentNumber))
-            throw new Exception("There is already a user with this document number");
-        if (existingUsers.Any(u => u.Email == user.Email))
-            throw new Exception("There is already a user with this email");
+        if (existingUsers.Any(u => u.DocumentNumber == userCreate.DocumentNumber))
+            throw new Exception("Ya un Usuario en el sistema con este número de Documento");
+        if (existingUsers.Any(u => u.Email == userCreate.Email))
+            throw new Exception("Ya hay un usuario con este correo.");
 
-        user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-        user.IsActive = true;
+        userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
+        userCreate.IsActive = true;
 
-        await userRepository.CreateAsync(user);
-        return user;
+        var userToDatabase = _mapper.Map<User>(userCreate);
+
+        await _userRepository.CreateAsync(userToDatabase);
+        return _mapper.Map<UserInformationResponse>(userToDatabase);
     }
 
     public async Task<LoginResponse> LoginAsync(string email, string password)
     {
-        var user = await userRepository.GetByEmailAsync(email);
+        var user = await _userRepository.GetByEmailAsync(email);
         if (user == null)
-            throw new Exception("Wrong Credentials");
+            throw new Exception("Credenciales Incorrectas");
 
         var isValidPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
 
         if (!isValidPassword)
-            throw new Exception("Wrong Credentials");
+            throw new Exception("Credenciales Incorrectas");
 
-        var token = jwtService.GenerateToken(user);
+        var token = _jwtService.GenerateToken(user);
 
-        return new LoginResponse 
+        return new LoginResponse
         {
             Token = token,
-            ExpireAt = DateTime.UtcNow.AddMinutes(30)
+            ExpireAt = DateTime.UtcNow.AddMinutes(60)
         };
+    }
+
+    public async Task<UserInformationResponse> UpdateAsync(string id, UpdateUserRequest user)
+    {
+        var usertoUpdate = await _userRepository.GetAsync(id);
+        if (usertoUpdate == null) throw new Exception("Usuario no encontrado");
+
+        usertoUpdate.FullName = string.IsNullOrWhiteSpace(user.FullName) ? usertoUpdate.FullName : user.FullName;
+        usertoUpdate.Email = string.IsNullOrWhiteSpace(user.Email) ? usertoUpdate.Email : user.Email;
+        usertoUpdate.PhoneNumber = string.IsNullOrWhiteSpace(user.PhoneNumber) ? usertoUpdate.PhoneNumber : user.PhoneNumber;
+        usertoUpdate.DocumentNumber = string.IsNullOrWhiteSpace(user.DocumentNumber) ? usertoUpdate.DocumentNumber : user.DocumentNumber;
+        if (user.Role.HasValue) usertoUpdate.Role = user.Role.Value;
+        if (user.IsActive.HasValue) usertoUpdate.IsActive = user.IsActive.Value;
+
+        if (!string.IsNullOrEmpty(user.Password)) usertoUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+        await _userRepository.UpdateAsync(id, usertoUpdate);
+
+        return _mapper.Map<UserInformationResponse>(usertoUpdate);
+    }
+
+    public async Task<bool> SetInactiveUser(string userId)
+    {
+        var userFilter = await _userRepository.GetAsync(userId);
+        if (userFilter == null) throw new Exception("Usuario no encontrado");
+
+        if (!userFilter.IsActive) return false;
+
+        userFilter.IsActive = false;
+
+        await _userRepository.UpdateAsync(userId, userFilter);
+
+        return true;
     }
 }

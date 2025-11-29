@@ -12,13 +12,9 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         Collection = context.GetCollection<User>("users");
     }
 
-    public async Task<List<User>> GetByDocumentNumberAndEmailAsync(string documentNumber, string email)
-    {
-        return await Collection.Find(x => x.DocumentNumber == documentNumber || x.Email == email).ToListAsync();
-    }
+    public async Task<List<User>> GetByDocumentNumberAndEmailAsync(string documentNumber, string email) =>
+        await Collection.Find(x => x.DocumentNumber == documentNumber || x.Email == email).ToListAsync();
 
-    public async Task<User?> GetByEmailAsync(string email)
-    {
-        return await Collection.Find(x => x.Email == email).FirstOrDefaultAsync();
-    }
+    public async Task<User?> GetByEmailAsync(string email) =>
+        await Collection.Find(x => x.Email == email).FirstOrDefaultAsync();
 }

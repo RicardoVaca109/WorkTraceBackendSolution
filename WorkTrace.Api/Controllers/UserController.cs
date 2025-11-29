@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Services;
-using WorkTrace.Data.Models;
 
 namespace WorkTrace.Api.Controllers;
 
@@ -12,19 +12,43 @@ public class UserController(IUserService userService) : ControllerBase
 {
     [Authorize]
     [HttpGet]
-    //[SwaggerOperation(Summary = "Obtiene todos los Usuarios del Sistema")]
-    //[SwaggerResponse(200, "Usuarios Encontrados Correctamente", typeof(List<User>))]
-    //[SwaggerResponse(401, "Usuario no Autorizado")]
-    //[SwaggerResponse(404, "Recurso no Encontrado")]
-    public async Task<List<User>> GetAll() =>
-        await userService.GetAllAsync();
+    public async Task<ActionResult<List<UserInformationResponse>>> GetAll()
+    {
+        var usersInSystem = await userService.GetAllAsync();
+        return Ok(usersInSystem);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task <UserInformationResponse> GetById(string id) =>
+        await userService.GetByIdAsync(id);
 
     [Authorize]
     [HttpPost]
-    public async Task<User> Create(User user) =>
+    public async Task<UserInformationResponse> Create(CreateUserRequest user) =>
         await userService.CreateAsync(user);
-    [HttpPost]
-    public async Task<LoginResponse> Login(LoginRequest request) =>
-        await userService.LoginAsync(request.Email, request.Password);
 
+    [HttpPost]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    {
+        var loginUser = await userService.LoginAsync(request.Email, request.Password);
+        return Ok(loginUser);
+    }
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<UserInformationResponse>> Update(string id, [FromBody] UpdateUserRequest request)
+    {
+        var userUpdate = await userService.UpdateAsync(id, request);
+        return Ok(userUpdate);
+    }
+
+    [Authorize]
+    [HttpPut("{id}/deactivate")]
+    public async Task<IActionResult> DeactivateUser(string id)
+    {
+        var succes = await userService.SetInactiveUser(id);
+        if (!succes) return NotFound("Usuario no encontrado o Inactivo");
+        return Ok("Ahora Usuario esta Inactivo");
+    }
 }

@@ -8,12 +8,34 @@ using WorkTrace.Data;
 using WorkTrace.Data.Common.Setttings;
 using WorkTrace.Logic;
 using WorkTrace.Repositories;
+//using DotNetEnv;
+
+//Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<WorkTraceDatabaseSettings>(
     builder.Configuration.GetSection("WorkTraceDatabase"));
+
+builder.Services.AddControllers();
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowWebApp", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:5058",
+            "https://localhost:7156",
+            "http://localhost:11516",
+            "https://localhost:44384"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
 
 builder.Services.AddDataServices();
 builder.Services.AddRepositoriesServices();
@@ -23,11 +45,9 @@ builder.Services.AddApplicationServices();
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("ApplicationSettings"));
 
-
-builder.Services.AddControllers();
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(genConfig =>
     {
         genConfig.SwaggerDoc("v1", new OpenApiInfo
@@ -49,7 +69,7 @@ builder.Services.AddSwaggerGen(genConfig =>
             Scheme = "bearer",                  
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Description = "Enter: Bearer {your token}"
+            Description = "Enter:{your token}"
         });
 
         genConfig.AddSecurityRequirement(new OpenApiSecurityRequirement 
@@ -86,6 +106,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtConfiguration.Audience,
     };
 });
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -96,7 +117,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Disabled for HTTP-only development
+
+app.UseCors("AllowWebApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

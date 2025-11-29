@@ -18,7 +18,8 @@ public class JwtService(IOptions<JwtSettings> jwtOptions) : IJwtService
         {
             new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Role, user.Role)
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new("IsActive", user.IsActive.ToString())
         };
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
