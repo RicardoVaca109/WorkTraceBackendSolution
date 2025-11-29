@@ -15,9 +15,9 @@ public class UpdateAssignmentMobileValidator : AbstractValidator<UpdateAssignmen
             .When(x => x.CurrentLocation != null)
             .WithMessage("La ubicación actual debe estar en formato de coordenadas");
 
-        RuleForEach(x => x.StepsProgress)
-            .Must(step => step.CompletedAt == null || step.IsCompleted)
-            .WithMessage("Se toma la hora solo si el paso se completo");
+        //RuleForEach(x => x.StepsProgress)
+        //    .Must(step => step.CompletedAt == null || step.IsCompleted)
+        //    .WithMessage("Se toma la hora solo si el paso se completo");
 
         RuleForEach(x => x.MediaFiles)
             .Must(file => !string.IsNullOrEmpty(file.Url))

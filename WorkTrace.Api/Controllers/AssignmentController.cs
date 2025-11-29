@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.Services;
-using WorkTrace.Logic.Services;
 
 namespace WorkTrace.Api.Controllers;
 

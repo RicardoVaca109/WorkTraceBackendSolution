@@ -60,7 +60,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         return new LoginResponse
         {
             Token = token,
-            ExpireAt = DateTime.UtcNow.AddMinutes(30)
+            ExpireAt = DateTime.UtcNow.AddMinutes(60)
         };
     }
 

@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Data;
 using WorkTrace.Data.Models;
@@ -52,27 +51,20 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
     public async Task<List<BsonDocument>> GetAssignmentsListByUserRawAsync(string userId)
     {
         var userObjectId = new ObjectId(userId);
-
         var now = DateTime.UtcNow;
 
         var pipeline = new[]
         {
-        // match por usuario
-        new BsonDocument("$match",
-            new BsonDocument("Users", userObjectId)
-        ),
-        // calcular distancia de fecha
+        new BsonDocument("$match", new BsonDocument("Users", userObjectId)),
+
         new BsonDocument("$addFields",
             new BsonDocument("Distance",
                 new BsonDocument("$abs",
-                    new BsonArray
-                    {
-                        new BsonDocument("$subtract", new BsonArray { "$AssignedDate", now })
-                    }
+                    new BsonDocument("$subtract", new BsonArray { "$AssignedDate", now })
                 )
             )
         ),
-        // lookup client
+
         new BsonDocument("$lookup",
             new BsonDocument
             {
@@ -82,7 +74,14 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
                 { "as", "ClientInfo" }
             }
         ),
-        // lookup service
+        new BsonDocument("$unwind",
+            new BsonDocument
+            {
+                { "path", "$ClientInfo" },
+                { "preserveNullAndEmptyArrays", true }
+            }
+        ),
+
         new BsonDocument("$lookup",
             new BsonDocument
             {
@@ -92,24 +91,31 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
                 { "as", "ServiceInfo" }
             }
         ),
-        // campos finales
+        new BsonDocument("$unwind",
+            new BsonDocument
+            {
+                { "path", "$ServiceInfo" },
+                { "preserveNullAndEmptyArrays", true }
+            }
+        ),
+
         new BsonDocument("$project",
             new BsonDocument
             {
                 { "_id", 1 },
-                { "Client", new BsonDocument("$arrayElemAt", new BsonArray { "$ClientInfo.FullName", 0 }) },
-                { "Service", new BsonDocument("$arrayElemAt", new BsonArray { "$ServiceInfo.Name", 0 }) },
+                { "Client", new BsonDocument("$ifNull", new BsonArray { "$ClientInfo.FullName", "" }) },
+                { "Service", new BsonDocument("$ifNull", new BsonArray { "$ServiceInfo.Name", "" }) },
                 { "AssignedDate", 1 },
                 { "Distance", 1 }
             }
         ),
 
-        // ordenar por fecha más cercana
         new BsonDocument("$sort", new BsonDocument { { "Distance", 1 } })
     };
 
         return await Collection.Aggregate<BsonDocument>(pipeline).ToListAsync();
     }
+
 
     public async Task<BsonDocument?> GetAssignmentTrackingRawAsync(string assignmentId)
     {

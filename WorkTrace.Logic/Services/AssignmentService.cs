@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
@@ -78,7 +79,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         }
 
         _mapper.Map(request, assignment);
-        
+
         await _assignmentRepository.UpdateAsync(id, assignment);
 
         return _mapper.Map<AssignmentResponse>(assignment);
@@ -90,16 +91,42 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         var list = raw.Select(x =>
         {
-            var assignedDate = x["AssignedDate"].ToLocalTime();
+            var assignedDateLocal = DateTime.MinValue;
+            if (x.TryGetValue("AssignedDate", out var assignedVal) && assignedVal != BsonNull.Value)
+            {
+                if (assignedVal.IsBsonDateTime)
+                {
+                    var utc = assignedVal.AsBsonDateTime.ToUniversalTime();
+                    assignedDateLocal = utc.ToLocalTime();
+                }
+                else if (assignedVal.IsValidDateTime)
+                {
+                    var utc = (DateTime)assignedVal;
+                    if (utc.Kind == DateTimeKind.Unspecified)
+                        utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+                    assignedDateLocal = utc.ToLocalTime();
+                }
+            }
+
+            string client = "";
+            if (x.TryGetValue("Client", out var clientVal) && clientVal != BsonNull.Value)
+            {
+                client = clientVal.AsString;
+            }
+
+            string service = "";
+            if (x.TryGetValue("Service", out var serviceVal) && serviceVal != BsonNull.Value)
+            {
+                service = serviceVal.AsString;
+            }
+
             return new AssignmentListResponse
             {
                 Id = x["_id"].ToString(),
-                Client = x.GetValue("Client").AsString,
-                Service = x.GetValue("Service").AsString,
-
-                // Ahora enviamos DateTime REAL, no string formateado:
-                AssignedDate = assignedDate,
-                AssignedTime = assignedDate
+                Client = client,
+                Service = service,
+                AssignedDate = assignedDateLocal,
+                AssignedTime = assignedDateLocal
             };
         }).ToList();
 
@@ -166,8 +193,8 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 Service = service?.Name ?? "Sin nombre",
                 Status = status?.Name ?? "Sin nombre",
                 Address = assignment.Address,
-                AssignedDate = assignment.AssignedDate.ToString("dd-MM-yyyy"),
-                AssignedTime = assignment.AssignedDate.ToString("HH:mm"),
+                AssignedDate = assignment.AssignedDate.ToLocalTime().ToString("dd-MM-yyyy"),
+                AssignedTime = assignment.AssignedDate.ToLocalTime().ToString("HH:mm"),
                 CreatedByUser = createdBy?.FullName ?? "N/A"
             };
             result.Add(dto);
@@ -237,7 +264,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             }
         }
 
-        assignment.StepsProgress = request.StepProgresses;
+        //assignment.StepsProgress = request.StepProgresses;
         assignment.Comment = request.Comment;
 
         await _assignmentRepository.UpdateAsync(id, assignment);

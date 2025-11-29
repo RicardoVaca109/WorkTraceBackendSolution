@@ -7,12 +7,12 @@ public class UpdateProgressValidator : AbstractValidator<UpdateProgressRequest>
 {
     public UpdateProgressValidator()
     {
-        RuleFor(x => x.StepProgresses)
-            .NotEmpty().WithMessage("Los pasos y el progreso no pueden ser nulos ni vacios");
+        //RuleFor(x => x.StepProgresses)
+        //    .NotEmpty().WithMessage("Los pasos y el progreso no pueden ser nulos ni vacios");
 
-        RuleForEach(x => x.StepProgresses)
-            .Must(step => step.IsCompleted || step.CompletedAt == null)
-            .WithMessage("Se toma la hora solo si el paso se completo");
+        //RuleForEach(x => x.StepProgresses)
+        //    .Must(step => step.IsCompleted || step.CompletedAt == null)
+        //    .WithMessage("Se toma la hora solo si el paso se completo");
 
         RuleForEach(x => x.MediaFiles)
             .Must(BeAValidImage)

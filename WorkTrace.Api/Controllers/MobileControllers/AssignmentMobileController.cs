@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.Services;
-using WorkTrace.Logic.Services;
 
 namespace WorkTrace.Api.Controllers.MobileControllers
 {

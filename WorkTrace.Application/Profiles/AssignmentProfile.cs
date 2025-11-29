@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
-using WorkTrace.Application.Configurations;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Data.Models;
@@ -25,7 +24,7 @@ public class AssignmentProfile : Profile
             .ForMember(dest => dest.CheckOut, opt => opt.Condition(src => src.CheckOut.HasValue))
             .ForMember(dest => dest.CurrentLocation, opt => opt.Condition(src => src.CurrentLocation != null))
             .ForMember(dest => dest.Comment, opt => opt.Condition(src => !string.IsNullOrEmpty(src.Comment)))
-            .ForMember(dest => dest.StepsProgress, opt => opt.Condition(src => src.StepsProgress != null && src.StepsProgress.Any()))
+            //.ForMember(dest => dest.StepsProgress, opt => opt.Condition(src => src.StepsProgress != null && src.StepsProgress.Any()))
             .ForMember(dest => dest.MediaFiles, opt => opt.Condition(src => src.MediaFiles != null && src.MediaFiles.Any()));
 
         CreateMap<UpdateAssignmentWebRequest, Assignment>()

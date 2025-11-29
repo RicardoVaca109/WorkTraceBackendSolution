@@ -18,7 +18,7 @@ public class AssignmentMobileResponse
     public GeoPoint? CurrentLocation { get; set; }
     public GeoPoint? DestinationLocation { get; set; }
 
-    public List<StepProgress> StepsProgress { get; set; }
+    //public List<StepProgress> StepsProgress { get; set; }
     public List<MediaFile> MediaFiles { get; set; }
 
     public string Comment { get; set; }
