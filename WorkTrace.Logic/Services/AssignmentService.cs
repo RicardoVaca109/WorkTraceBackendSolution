@@ -208,10 +208,12 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     {
         var assignment = await _assignmentRepository.GetAsync(id)
             ?? throw new Exception("Asignación no encontrada");
-        if (assignment.CheckIn != null)
-            throw new Exception("La asignación ya fue iniciada.");
+        
+        if (assignment.CheckIn == null)
+        {
+            assignment.CheckIn = request.CheckIn;
+        }
 
-        assignment.CheckIn = request.CheckIn;
         assignment.CurrentLocation = request.CurrentLocation;
 
         await _assignmentRepository.UpdateAsync(id, assignment);
