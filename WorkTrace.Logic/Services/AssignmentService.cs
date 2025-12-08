@@ -195,7 +195,8 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 Address = assignment.Address,
                 AssignedDate = assignment.AssignedDate.ToLocalTime().ToString("dd-MM-yyyy"),
                 AssignedTime = assignment.AssignedDate.ToLocalTime().ToString("HH:mm"),
-                CreatedByUser = createdBy?.FullName ?? "N/A"
+                CreatedByUser = createdBy?.FullName ?? "N/A",
+                CheckIn = assignment.CheckIn?.ToLocalTime()
             };
             result.Add(dto);
         }

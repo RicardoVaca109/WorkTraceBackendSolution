@@ -10,4 +10,5 @@ public class AssigmentMobileDashboardResponse
     public string AssignedDate { get; set; }
     public string AssignedTime { get; set; }
     public string CreatedByUser { get; set; }
+    public DateTime? CheckIn { get; set; }
 }
