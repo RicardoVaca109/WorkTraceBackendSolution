@@ -1,25 +1,35 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using WorkTrace.Application.Configurations;
 using WorkTrace.Application.Services;
 
-namespace WorkTrace.Logic.Services;
-
-public class FileService : IFileService
+namespace WorkTrace.Logic.Services
 {
-    public async Task<string> SaveFileAsync(IFormFile file, string folder)
+    public class FileService : IFileService
     {
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var directory = Path.Combine("wwwroot", folder);
+        private readonly FileStorageSettings _settings;
 
-        if (!Directory.Exists(directory))
-            Directory.CreateDirectory(directory);
-
-        var path = Path.Combine(directory, fileName);
-
-        using (var stream = new FileStream(path, FileMode.Create))
+        public FileService(IOptions<FileStorageSettings> settings)
         {
-            await file.CopyToAsync(stream);
+            _settings = settings.Value;
         }
 
-        return $"/{folder}/{fileName}";
+        public async Task<string> SaveFileAsync(IFormFile file, string folder)
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+            var directory = Path.Combine(_settings.BasePath, folder);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            var path = Path.Combine(directory, fileName);
+
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            return $"{folder}/{fileName}";
+        }
     }
 }

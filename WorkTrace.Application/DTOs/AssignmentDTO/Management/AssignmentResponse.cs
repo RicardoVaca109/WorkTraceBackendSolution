@@ -10,6 +10,8 @@ public class AssignmentResponse
     public string Status { get; set; }
     public string AssignedDate { get; set; }
     public string AssignedTime { get; set; }
+    public DateTime? CheckIn { get; set; }
+    public DateTime? CheckOut { get; set; }
     public string Address { get; set; }
     public GeoPoint? DestinationLocation { get; set; }
     public string CreatedByUser { get; set; }

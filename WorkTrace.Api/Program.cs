@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -44,6 +46,9 @@ builder.Services.AddApplicationServices();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("ApplicationSettings"));
+
+builder.Services.Configure<FileStorageSettings>(
+    builder.Configuration.GetSection("FileStorage"));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -126,4 +131,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var fileStorageSettings = app.Services
+    .GetRequiredService<IOptions<FileStorageSettings>>()
+    .Value;
+
+if (!Directory.Exists(fileStorageSettings.BasePath))
+{
+    Directory.CreateDirectory(fileStorageSettings.BasePath);
+}
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        fileStorageSettings.BasePath
+    ),
+    RequestPath = "/media"
+});
 app.Run();

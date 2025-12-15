@@ -203,7 +203,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         return result;
     }
 
-
     public async Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssigmentRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)

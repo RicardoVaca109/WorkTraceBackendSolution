@@ -28,4 +28,8 @@
     <ProjectReference Include="..\WorkTrace.Repositories\WorkTrace.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

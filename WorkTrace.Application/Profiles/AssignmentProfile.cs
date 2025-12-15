@@ -8,7 +8,6 @@ namespace WorkTrace.Application.Profiles;
 
 public class AssignmentProfile : Profile
 {
-
     public AssignmentProfile()
     {
         CreateMap<CreateAssignmentRequest, Assignment>()
@@ -54,7 +53,11 @@ public class AssignmentProfile : Profile
             ))
             .ForMember(dest => dest.AssignedTime, opt => opt.MapFrom(src =>
                 src.AssignedDate.ToString("HH:mm")
-            ));
+            ))
+            .ForMember(dest => dest.CheckIn,
+                opt => opt.MapFrom(src => src.CheckIn))
+            .ForMember(dest => dest.CheckOut,
+                opt => opt.MapFrom(src => src.CheckOut));
 
         CreateMap<Assignment, AssignmentMobileResponse>()
             .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service.ToString()))
@@ -70,7 +73,7 @@ public class AssignmentProfile : Profile
 
         CreateMap<Assignment, AssigmentMobileDashboardResponse>()
            .ForMember(dest => dest.AssignedDate,
-               opt => opt.MapFrom(src => src.AssignedDate           
+               opt => opt.MapFrom(src => src.AssignedDate
                    .ToString("dd-MM-yyyy")))
            .ForMember(dest => dest.AssignedTime,
                opt => opt.MapFrom(src => src.AssignedDate
@@ -96,10 +99,10 @@ public class AssignmentProfile : Profile
 
         CreateMap<Assignment, AssignmentListResponse>()
              .ForMember(dest => dest.AssignedDate,
-                 opt => opt.MapFrom(src => src.AssignedDate                     
+                 opt => opt.MapFrom(src => src.AssignedDate
                      .ToString("dd-MM-yyyy")))
              .ForMember(dest => dest.AssignedTime,
-                 opt => opt.MapFrom(src => src.AssignedDate         
+                 opt => opt.MapFrom(src => src.AssignedDate
                      .ToString("HH:mm")));
     }
 }
