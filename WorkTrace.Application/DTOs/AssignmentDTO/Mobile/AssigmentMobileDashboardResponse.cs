@@ -7,8 +7,7 @@ public class AssigmentMobileDashboardResponse
     public string Service { get; set; }
     public string Status { get; set; }
     public string Address { get; set; }
-    public string AssignedDate { get; set; }
-    public string AssignedTime { get; set; }
+    public DateTime AssignedDate { get; set; }
     public string CreatedByUser { get; set; }
     public DateTime? CheckIn { get; set; }
 }

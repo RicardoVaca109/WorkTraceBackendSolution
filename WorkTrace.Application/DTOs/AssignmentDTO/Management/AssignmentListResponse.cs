@@ -6,5 +6,4 @@ public class AssignmentListResponse
     public string Client { get; set; }
     public string Service { get; set; }
     public DateTime AssignedDate { get; set; }
-    public DateTime AssignedTime { get; set; }
 }

@@ -42,21 +42,34 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         var mapResult = rawData.Select(doc =>
         {
-            DateTime assigned = doc.Contains("AssignedDate") && !doc["AssignedDate"].IsBsonNull
-                ? doc["AssignedDate"].ToLocalTime()
-                : DateTime.MinValue;
+            // AssignedDate (obligatoria)
+            DateTime assignedDate = DateTime.MinValue;
+            if (doc.TryGetValue("AssignedDate", out var assignedVal) && assignedVal != BsonNull.Value)
+            {
+                var utc = assignedVal.AsBsonDateTime.ToUniversalTime();
+                assignedDate = utc.ToLocalTime();
+            }
+            
+            DateTime? checkIn = null;
+            if (doc.TryGetValue("CheckIn", out var checkInVal) && checkInVal != BsonNull.Value)
+            {
+                var utc = checkInVal.AsBsonDateTime.ToUniversalTime();
+                checkIn = utc.ToLocalTime();
+            }
 
-            DateTime? co = null;
-            if (doc.Contains("CheckOut") && !doc["CheckOut"].IsBsonNull)
-                co = doc["CheckOut"].ToLocalTime();
+            DateTime? checkOut = null;
+            if (doc.TryGetValue("CheckOut", out var checkOutVal) && checkOutVal != BsonNull.Value)
+            {
+                var utc = checkOutVal.AsBsonDateTime.ToUniversalTime();
+                checkOut = utc.ToLocalTime();
+            }
 
             return new ClientHistoryResponse
             {
                 Service = doc["Service"].AsString,
-                Date = assigned == DateTime.MinValue ? "" : assigned.ToString("dd-MM-yyyy"),
-                Time = assigned == DateTime.MinValue ? "" : assigned.ToString("HH:mm"),
-                CheckOutDate = co == null ? "" : co.Value.ToString("dd-MM-yyyy"),
-                CheckOutTime = co == null ? "" : co.Value.ToString("HH:mm"),
+                AssignedDate = assignedDate,
+                CheckIn = checkIn,
+                CheckOut = checkOut,
                 Status = doc["Status"].AsString,
                 Address = doc["Address"].AsString,
                 Users = doc["Users"]
@@ -64,8 +77,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                     .Select(u => u.AsString)
                     .ToList()
             };
-        })
-        .ToList();
+        }).ToList();
         return mapResult;
     }
 
@@ -125,8 +137,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 Id = x["_id"].ToString(),
                 Client = client,
                 Service = service,
-                AssignedDate = assignedDateLocal,
-                AssignedTime = assignedDateLocal
+                AssignedDate = assignedDateLocal
             };
         }).ToList();
 
@@ -138,29 +149,28 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         var doc = await _assignmentRepository.GetAssignmentTrackingRawAsync(assignmentId);
         if (doc == null) return null;
 
+        DateTime? checkIn = null;
+        if (doc.TryGetValue("CheckIn", out var checkInVal) && checkInVal != BsonNull.Value)
+        {
+            var utc = checkInVal.AsBsonDateTime.ToUniversalTime();
+            checkIn = utc.ToLocalTime();
+        }
+
+        DateTime? checkOut = null;
+        if (doc.TryGetValue("CheckOut", out var checkOutVal) && checkOutVal != BsonNull.Value)
+        {
+            var utc = checkOutVal.AsBsonDateTime.ToUniversalTime();
+            checkOut = utc.ToLocalTime();
+        }
+
         return new AssignmentTrackingResponse
         {
             Id = doc["_id"].ToString(),
             Client = doc.GetValue("Client").AsString,
             Service = doc.GetValue("Service").AsString,
             Address = doc.GetValue("Address").AsString,
-
-            CheckInDate = doc["CheckIn"].IsBsonNull
-                ? null
-                : doc["CheckIn"].ToLocalTime().ToString("dd-MM-yyyy"),
-
-            CheckInTime = doc["CheckIn"].IsBsonNull
-                ? null
-                : doc["CheckIn"].ToLocalTime().ToString("HH:mm"),
-
-            CheckOutDate = doc["CheckOut"].IsBsonNull
-                ? null
-                : doc["CheckOut"].ToLocalTime().ToString("dd-MM-yyyy"),
-
-            CheckOutTime = doc["CheckOut"].IsBsonNull
-                ? null
-                : doc["CheckOut"].ToLocalTime().ToString("HH:mm"),
-
+            CheckIn = checkIn,
+            CheckOut = checkOut,
             CurrentLocation = doc.GetValue("CurrentLocation").IsBsonNull
                 ? null
                 : BsonSerializer.Deserialize<GeoPoint>(doc["CurrentLocation"].AsBsonDocument),
@@ -193,8 +203,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 Service = service?.Name ?? "Sin nombre",
                 Status = status?.Name ?? "Sin nombre",
                 Address = assignment.Address,
-                AssignedDate = assignment.AssignedDate.ToLocalTime().ToString("dd-MM-yyyy"),
-                AssignedTime = assignment.AssignedDate.ToLocalTime().ToString("HH:mm"),
+                AssignedDate = assignment.AssignedDate.ToLocalTime(),             
                 CreatedByUser = createdBy?.FullName ?? "N/A",
                 CheckIn = assignment.CheckIn?.ToLocalTime()
             };
@@ -273,23 +282,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         return _mapper.Map<AssignmentMobileResponse>(assignment);
     }
-
-    //public async Task<AssignmentResponse> UpdateAssignmentMobileAsync(string id, UpdateAssignmentMobileRequest request)
-    //{
-    //    var assignment = await _assignmentRepository.GetAsync(id) ?? throw new Exception("Asignación no encontrada");
-    //    if (request.MediaFiles != null && request.MediaFiles.Any())
-    //    {
-    //        foreach (var media in request.MediaFiles)
-    //        {
-    //            var filePath = fileService.SaveBase64Image(media.Url, "uploads/media");
-    //            media.Url = filePath;
-    //            media.UploadedAt = DateTime.UtcNow;
-    //        }
-    //    }
-    //    _mapper.Map(request, assignment);
-    //    await _assignmentRepository.UpdateAsync(id, assignment);
-    //    return _mapper.Map<AssignmentResponse>(assignment);
-    //}
 
     public async Task ValidateExistance(CreateAssignmentRequest assignmentRequest)
     {
