@@ -42,7 +42,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         var mapResult = rawData.Select(doc =>
         {
-            // AssignedDate (obligatoria)
             DateTime assignedDate = DateTime.MinValue;
             if (doc.TryGetValue("AssignedDate", out var assignedVal) && assignedVal != BsonNull.Value)
             {
