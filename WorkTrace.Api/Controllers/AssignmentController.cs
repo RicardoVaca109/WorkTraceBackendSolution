@@ -13,7 +13,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [HttpPost]
     public async Task<ActionResult<AssignmentResponse>> Create([FromBody] CreateAssignmentRequest request)
     {
-        var result = await assignmentService.CreateAssigmentAdminAsync(request);
+        var result = await assignmentService.CreateAssignmentAdminAsync(request);
         return Ok(result);
     }
 

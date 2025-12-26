@@ -67,7 +67,7 @@ public class AssignmentProfile : Profile
             .ForMember(dest => dest.CheckOut,
                 opt => opt.MapFrom(src => src.CheckOut));
 
-        CreateMap<Assignment, AssigmentMobileDashboardResponse>()
+        CreateMap<Assignment, AssignmentMobileDashboardResponse>()
            .ForMember(dest => dest.AssignedDate,
                opt => opt.MapFrom(src => src.AssignedDate));
 

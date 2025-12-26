@@ -3,7 +3,7 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 
-public class StartAssigmentRequest
+public class StartAssignmentRequest
 {
     [JsonPropertyName("checkIn")]
     public DateTime CheckIn { get; set; }

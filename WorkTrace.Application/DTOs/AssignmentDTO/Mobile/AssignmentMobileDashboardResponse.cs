@@ -1,6 +1,6 @@
 ﻿namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 
-public class AssigmentMobileDashboardResponse
+public class AssignmentMobileDashboardResponse
 {
     public string Id { get; set; }
     public string Client { get; set; }

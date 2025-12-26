@@ -11,7 +11,7 @@ namespace WorkTrace.Logic.Services;
 
 public class AssignmentService(IAssignmentRepository _assignmentRepository, IClientRepository _clientRepository, IFileService fileService, IGeocodingService _geocodingService, IServiceRepository _serviceRepository, IStatusRepository _statusRepository, IUserRepository _userRepository, IMapper _mapper) : IAssignmentService
 {
-    public async Task<AssignmentResponse> CreateAssigmentAdminAsync(CreateAssignmentRequest assignmentRequest)
+    public async Task<AssignmentResponse> CreateAssignmentAdminAsync(CreateAssignmentRequest assignmentRequest)
     {
         await ValidateExistance(assignmentRequest);
 
@@ -181,12 +181,12 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     }
 
     //Mobile
-    public async Task<List<AssigmentMobileDashboardResponse>> GetAssigmentByUserandRangeAsync(
+    public async Task<List<AssignmentMobileDashboardResponse>> GetAssignmentByUserandRangeAsync(
     string userId, DateTime start, DateTime end)
     {
         var data = await _assignmentRepository.GetAssignmentByUserAndDateRangeAsync(userId, start, end);
 
-        var result = new List<AssigmentMobileDashboardResponse>();
+        var result = new List<AssignmentMobileDashboardResponse>();
 
         foreach (var assignment in data)
         {
@@ -195,7 +195,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             var createdBy = await _userRepository.GetAsync(assignment.CreatedByUser.ToString());
             var status = await _statusRepository.GetAsync(assignment.Status.ToString());
 
-            var dto = new AssigmentMobileDashboardResponse
+            var dto = new AssignmentMobileDashboardResponse
             {
                 Id = assignment.Id.ToString(),
                 Client = client?.FullName ?? "Sin nombre",
@@ -211,7 +211,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
         return result;
     }
 
-    public async Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssigmentRequest request)
+    public async Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssignmentRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)
             ?? throw new Exception("Asignación no encontrada");
