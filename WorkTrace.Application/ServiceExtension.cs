@@ -29,6 +29,11 @@ public static class ServiceExtension
         //Client Validations
                 .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()
+        //FormTemplate and Question Validators
+                .AddValidatorsFromAssemblyContaining<CreateFormQuestionRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateFormQuestionsRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<CreateFormTemplateRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateFormTemplateRequestValidator>()
         //User Validations
                 .AddValidatorsFromAssemblyContaining<CreateUserValidator>()
                 .AddValidatorsFromAssemblyContaining<LoginValidator>()
@@ -48,5 +53,7 @@ public static class ServiceExtension
         services.AddAutoMapper(cfg => { }, typeof(ClientProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(StatusProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(AssignmentProfile).Assembly);
+        //services.AddAutoMapper(cfg => { }, typeof(AssignmentEvaluationProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(FormTemplateProfile).Assembly);
     }
 }

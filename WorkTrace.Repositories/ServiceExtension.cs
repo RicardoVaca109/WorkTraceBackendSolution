@@ -14,5 +14,7 @@ public static class ServiceExtension
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+        //services.AddScoped<IAssignmentEvaluationRepository, AssignmentEvaluationRepository>();
+        services.AddScoped<IFormTemplateRepository, FormTemplateRepository>();
     }
 }
