@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MongoDB.Bson;
 using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
@@ -52,32 +53,37 @@ public class FormTemplateService (IFormTemplateRepository _formTemplateRepositor
         return _mapper.Map<FormTemplateResponse>(template);
     }
 
-    public async Task<FormTemplateResponse> UpdateQuestionsAsync(string id, List<UpdateFormQuestionsRequest> questions)
+    public async Task<FormTemplateResponse> UpdateQuestionsAsync(string templateId, List<UpdateFormQuestionsRequest> questions)
     {
-        var template = await _formTemplateRepository.GetAsync(id);
+        var template = await _formTemplateRepository.GetAsync(templateId);
         if (template == null)
             throw new Exception("Plantilla no encontrada");
 
-        foreach (var questionRequest in questions)
+        foreach (var request in questions)
         {
-            var mappedQuestion = _mapper.Map<FormQuestion>(questionRequest);
+            if (string.IsNullOrEmpty(request.Id))
+                throw new Exception("El Id de la pregunta es obligatorio para editar");
+
+            var questionId = ObjectId.Parse(request.Id);
 
             var existingQuestion = template.Questions
-                .FirstOrDefault(q => q.Id == mappedQuestion.Id);
+                .FirstOrDefault(q => q.Id == questionId);
 
-            if (existingQuestion != null)
-            {
+            if (existingQuestion == null)
+                throw new Exception($"Pregunta con Id {request.Id} no encontrada");
 
-                existingQuestion.QuestionKey = mappedQuestion.QuestionKey;
-                existingQuestion.QuestionText = mappedQuestion.QuestionText;
-                existingQuestion.AnswerType = mappedQuestion.AnswerType;
-            }
-            else
-            {
-                template.Questions.Add(mappedQuestion);
-            }
+            // PATCH LOGIC
+            if (!string.IsNullOrWhiteSpace(request.QuestionKey))
+                existingQuestion.QuestionKey = request.QuestionKey;
+
+            if (!string.IsNullOrWhiteSpace(request.QuestionText))
+                existingQuestion.QuestionText = request.QuestionText;
+
+            if (request.AnswerType.HasValue)
+                existingQuestion.AnswerType = request.AnswerType.Value;
         }
-        await _formTemplateRepository.UpdateAsync(id, template);
+
+        await _formTemplateRepository.UpdateAsync(templateId, template);
 
         return _mapper.Map<FormTemplateResponse>(template);
     }

@@ -8,15 +8,14 @@ public class UpdateFormQuestionsRequestValidator : AbstractValidator<UpdateFormQ
     public UpdateFormQuestionsRequestValidator()
     {
         RuleFor(x => x.QuestionKey)
-            .NotEmpty()
             .MaximumLength(64);
 
         RuleFor(x => x.QuestionText)
-            .NotEmpty()
             .MaximumLength(264);
 
         RuleFor(x => x.AnswerType)
             .Must(value => Enum.IsDefined(typeof(AnswerType), value))
+            .When(x => x.AnswerType.HasValue)
             .WithMessage("'Tipo de Respuesta' debe ser un valor válido");
     }
 }
