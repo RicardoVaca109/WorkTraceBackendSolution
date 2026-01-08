@@ -4,6 +4,7 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
+using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Application.DTOs.StatusDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Information;
