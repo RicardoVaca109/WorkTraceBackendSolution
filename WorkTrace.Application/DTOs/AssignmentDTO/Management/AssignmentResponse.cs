@@ -1,4 +1,5 @@
-﻿using WorkTrace.Data.Models;
+﻿using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 public class AssignmentResponse
@@ -14,4 +15,5 @@ public class AssignmentResponse
     public string Address { get; set; }
     public GeoPoint? DestinationLocation { get; set; }
     public string CreatedByUser { get; set; }
+    public List<AssignedFormResponse> AssignedForms { get; set; }
 }

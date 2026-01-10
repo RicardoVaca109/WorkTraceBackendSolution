@@ -8,4 +8,6 @@ public class UpdateAssignmentWebRequest
     public string? Status { get; set; }
     public DateTime? AssignedDate { get; set; }
     public string? Address { get; set; }
+    public List<string>? AddForms { get; set; }
+    public List<string>? RemoveForms { get; set; }
 }

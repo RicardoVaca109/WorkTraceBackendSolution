@@ -1,26 +1,34 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using System.Linq;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
+using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class AssignmentService(IAssignmentRepository _assignmentRepository, IClientRepository _clientRepository, IFileService fileService, IGeocodingService _geocodingService, IServiceRepository _serviceRepository, IStatusRepository _statusRepository, IUserRepository _userRepository, IMapper _mapper) : IAssignmentService
+public class AssignmentService(IAssignmentRepository _assignmentRepository, IClientRepository _clientRepository, IFileService fileService, IFormTemplateRepository _formTemplateRepository, IGeocodingService _geocodingService, IServiceRepository _serviceRepository, IStatusRepository _statusRepository, IUserRepository _userRepository, IMapper _mapper) : IAssignmentService
 {
-    public async Task<AssignmentResponse> CreateAssignmentAdminAsync(CreateAssignmentRequest assignmentRequest)
+    public async Task<AssignmentResponse> CreateAssignmentAdminAsync(CreateAssignmentRequest request)
     {
-        await ValidateExistance(assignmentRequest);
+        await ValidateExistance(request);
 
-        var assignment = _mapper.Map<Assignment>(assignmentRequest);
+        var assignment = _mapper.Map<Assignment>(request);
 
-        assignment.DestinationLocation = await _geocodingService.GetGeoPointAsync(assignmentRequest.Address);
+        assignment.DestinationLocation =
+            await _geocodingService.GetGeoPointAsync(request.Address);
+
+        assignment.AssignedForms ??= new List<string>();
 
         await _assignmentRepository.CreateAsync(assignment);
-        return _mapper.Map<AssignmentResponse>(assignment);
+
+        var dto = _mapper.Map<AssignmentResponse>(assignment);
+        dto.AssignedForms = await ResolveAssignedFormsAsync(assignment.AssignedForms);
+        return dto;
     }
 
     public async Task<List<AssignmentResponse>> GetAllAsync()
@@ -33,6 +41,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     {
         var assignmentById = await _assignmentRepository.GetAsync(id) ?? throw new Exception("Asignación no encontrada");
         var response = _mapper.Map<AssignmentResponse>(assignmentById);
+        response.AssignedForms = await ResolveAssignedFormsAsync(assignmentById.AssignedForms);
         return response;
     }
 
@@ -48,7 +57,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 var utc = assignedVal.AsBsonDateTime.ToUniversalTime();
                 assignedDate = utc.ToLocalTime();
             }
-            
+
             DateTime? checkIn = null;
             if (doc.TryGetValue("CheckIn", out var checkInVal) && checkInVal != BsonNull.Value)
             {
@@ -82,18 +91,25 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
     public async Task<AssignmentResponse> UpdateAssignmentAsync(string id, UpdateAssignmentWebRequest request)
     {
-        var assignment = await _assignmentRepository.GetAsync(id) ?? throw new Exception("Asignación no encontrada");
-
-        if (!string.IsNullOrEmpty(request.Address))
-        {
-            assignment.DestinationLocation = await _geocodingService.GetGeoPointAsync(request.Address);
-        }
+        var assignment = await _assignmentRepository.GetAsync(id)
+            ?? throw new Exception("Asignación no encontrada");
 
         _mapper.Map(request, assignment);
 
+        await ProcesarFormsAsync(request, assignment);
+
+        if (!string.IsNullOrEmpty(request.Address))
+        {
+            assignment.DestinationLocation =
+                await _geocodingService.GetGeoPointAsync(request.Address);
+        }
+
         await _assignmentRepository.UpdateAsync(id, assignment);
 
-        return _mapper.Map<AssignmentResponse>(assignment);
+        var response = _mapper.Map<AssignmentResponse>(assignment);
+        response.AssignedForms = await ResolveAssignedFormsAsync(assignment.AssignedForms);
+        return response;
+
     }
 
     public async Task<List<AssignmentListResponse>> GetAssignmentsForListAsync(string userId)
@@ -184,7 +200,8 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     public async Task<List<AssignmentMobileDashboardResponse>> GetAssignmentByUserandRangeAsync(
     string userId, DateTime start, DateTime end)
     {
-        var data = await _assignmentRepository.GetAssignmentByUserAndDateRangeAsync(userId, start, end);
+        var data = await _assignmentRepository
+        .GetAssignmentByUserAndDateRangeAsync(userId, start, end);
 
         var result = new List<AssignmentMobileDashboardResponse>();
 
@@ -195,6 +212,9 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             var createdBy = await _userRepository.GetAsync(assignment.CreatedByUser.ToString());
             var status = await _statusRepository.GetAsync(assignment.Status.ToString());
 
+            var assignedForms = await ResolveAssignedFormsAsync(
+                assignment.AssignedForms);
+
             var dto = new AssignmentMobileDashboardResponse
             {
                 Id = assignment.Id.ToString(),
@@ -202,62 +222,62 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 Service = service?.Name ?? "Sin nombre",
                 Status = status?.Name ?? "Sin nombre",
                 Address = assignment.Address,
-                AssignedDate = assignment.AssignedDate.ToLocalTime(),             
+                AssignedDate = assignment.AssignedDate.ToLocalTime(),
                 CreatedByUser = createdBy?.FullName ?? "N/A",
-                CheckIn = assignment.CheckIn?.ToLocalTime()
+                CheckIn = assignment.CheckIn?.ToLocalTime(),
+                AssignedForms = assignedForms
             };
+
             result.Add(dto);
         }
+
         return result;
     }
 
     public async Task<AssignmentMobileResponse> StartAssignmentAsync(string id, StartAssignmentRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)
-            ?? throw new Exception("Asignación no encontrada");
-        
+        ?? throw new Exception("Asignación no encontrada");
+
         if (assignment.CheckIn == null)
-        {
             assignment.CheckIn = request.CheckIn;
-        }
 
         assignment.CurrentLocation = request.CurrentLocation;
 
         await _assignmentRepository.UpdateAsync(id, assignment);
 
-        return _mapper.Map<AssignmentMobileResponse>(assignment);
+        return await GetAssignmentMobileDetailAsync(id);
     }
 
     public async Task<AssignmentMobileResponse> FinishAssignmentAsync(string id, FinishAssignmentRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)
-            ?? throw new Exception("Asignación no encontrada");
+        ?? throw new Exception("Asignación no encontrada");
 
         assignment.CheckOut = request.CheckOut;
 
         await _assignmentRepository.UpdateAsync(id, assignment);
 
-        return _mapper.Map<AssignmentMobileResponse>(assignment);
+        return await GetAssignmentMobileDetailAsync(id);
     }
 
     public async Task<AssignmentMobileResponse> UpdateLocationAsync(string id, UpdateLocationRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)
-            ?? throw new Exception("Asignación no encontrada");
+        ?? throw new Exception("Asignación no encontrada");
 
         assignment.CurrentLocation = request.CurrentLocation;
 
         await _assignmentRepository.UpdateAsync(id, assignment);
 
-        return _mapper.Map<AssignmentMobileResponse>(assignment);
+        return await GetAssignmentMobileDetailAsync(id);
     }
 
     public async Task<AssignmentMobileResponse> UpdateProgressAsync(string id, UpdateProgressRequest request)
     {
         var assignment = await _assignmentRepository.GetAsync(id)
-            ?? throw new Exception("Asignación no encontrada");
+        ?? throw new Exception("Asignación no encontrada");
 
-        // Procesar archivos
         if (request.MediaFiles != null)
         {
             assignment.MediaFiles ??= new List<MediaFile>();
@@ -274,12 +294,25 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             }
         }
 
-        //assignment.StepsProgress = request.StepProgresses;
         assignment.Comment = request.Comment;
 
         await _assignmentRepository.UpdateAsync(id, assignment);
 
-        return _mapper.Map<AssignmentMobileResponse>(assignment);
+        return await GetAssignmentMobileDetailAsync(id);
+    }
+
+    public async Task<AssignmentMobileResponse> GetAssignmentMobileDetailAsync(string id)
+    {
+        var assignment = await _assignmentRepository.GetAsync(id)
+            ?? throw new Exception("Asignación no encontrada");
+
+        var response = _mapper.Map<AssignmentMobileResponse>(assignment);
+
+        // Resolver formularios asignados (nombre + id)
+        response.AssignedForms =
+            await ResolveAssignedFormsAsync(assignment.AssignedForms);
+
+        return response;
     }
 
     public async Task ValidateExistance(CreateAssignmentRequest assignmentRequest)
@@ -298,5 +331,46 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             var user = await _userRepository.GetAsync(userId);
             if (user == null) throw new Exception($"Usuario no existe");
         }
+    }
+    private async Task ProcesarFormsAsync(
+    UpdateAssignmentWebRequest request,
+    Assignment assignment)
+    {
+        assignment.AssignedForms ??= new List<string>();
+
+        if (request.AddForms != null && request.AddForms.Any())
+        {
+            foreach (var formId in request.AddForms)
+            {
+                var form = await _formTemplateRepository.GetAsync(formId);
+                if (form == null || !form.IsActive)
+                    throw new Exception("Formulario no existe o está inactivo");
+
+                if (!assignment.AssignedForms.Contains(formId))
+                    assignment.AssignedForms.Add(formId);
+            }
+        }
+
+        if (request.RemoveForms != null && request.RemoveForms.Any())
+        {
+            assignment.AssignedForms.RemoveAll(f =>
+                request.RemoveForms.Contains(f));
+        }
+    }
+
+    private async Task<List<AssignedFormResponse>> ResolveAssignedFormsAsync(
+    List<string>? formIds)
+    {
+        if (formIds == null || !formIds.Any())
+            return new();
+
+        var forms = await _formTemplateRepository
+            .GetManyAsync(f => formIds.Contains(f.Id) && f.IsActive);
+
+        return forms.Select(f => new AssignedFormResponse
+        {
+            Id = f.Id,
+            Name = f.Name
+        }).ToList();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using WorkTrace.Data.Common.Generics;
 
 namespace WorkTrace.Data.Models;
@@ -20,4 +21,6 @@ public class Assignment : BaseModel
     public List<MediaFile> MediaFiles { get; set; }
     public ObjectId CreatedByUser { get; set; }
     public string Comment { get; set; }
+    [BsonRepresentation(BsonType.ObjectId)]
+    public List<string>? AssignedForms { get; set; }
 }

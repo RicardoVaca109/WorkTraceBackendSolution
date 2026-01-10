@@ -35,6 +35,14 @@ public class UpdateAssignmentWebValidator : AbstractValidator<UpdateAssignmentWe
         RuleFor(x => x.AssignedDate)
             .GreaterThan(DateTime.MinValue).When(x => x.AssignedDate.HasValue)
             .WithMessage("La fecha de Asignación debe ser una fecha válida.");
+
+        RuleForEach(x => x.AddForms)
+            .Must(BeValidObjectId)
+            .When(x => x.AddForms != null);
+
+        RuleForEach(x => x.RemoveForms)
+            .Must(BeValidObjectId)
+            .When(x => x.RemoveForms != null);
     }
 
     private bool BeValidObjectId(string id)
