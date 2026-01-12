@@ -1,4 +1,6 @@
-﻿namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
+﻿using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+
+namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 
 public class AssignmentMobileDashboardResponse
 {
@@ -10,4 +12,6 @@ public class AssignmentMobileDashboardResponse
     public DateTime AssignedDate { get; set; }
     public string CreatedByUser { get; set; }
     public DateTime? CheckIn { get; set; }
+    public DateTime? CheckOut { get; set; }
+    public List<AssignedFormResponse> AssignedForms { get; set; }
 }

@@ -225,6 +225,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 AssignedDate = assignment.AssignedDate.ToLocalTime(),
                 CreatedByUser = createdBy?.FullName ?? "N/A",
                 CheckIn = assignment.CheckIn?.ToLocalTime(),
+                CheckOut = assignment.CheckOut?.ToLocalTime(),
                 AssignedForms = assignedForms
             };
 
