@@ -1,4 +1,6 @@
-﻿namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
+﻿using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+
+namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 
 public class ClientHistoryResponse
 {
@@ -9,4 +11,5 @@ public class ClientHistoryResponse
     public string Status { get; set; }
     public string Address { get; set; }
     public List<string> Users { get; set; }
+    public List<AssignedFormResponse> AssignedForms { get; set; }
 }

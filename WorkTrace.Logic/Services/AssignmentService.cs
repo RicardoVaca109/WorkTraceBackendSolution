@@ -34,7 +34,18 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
     public async Task<List<AssignmentResponse>> GetAllAsync()
     {
         var assignmentsInSystem = await _assignmentRepository.GetAsync();
-        return _mapper.Map<List<AssignmentResponse>>(assignmentsInSystem);
+        var responseList = _mapper.Map<List<AssignmentResponse>>(assignmentsInSystem);
+
+        foreach (var dto in responseList)
+        {
+            var original = assignmentsInSystem.FirstOrDefault(a => a.Id.ToString() == dto.Id);
+            if (original != null)
+            {
+                dto.AssignedForms = await ResolveAssignedFormsAsync(original.AssignedForms);
+            }
+        }
+
+        return responseList;
     }
 
     public async Task<AssignmentResponse> GetByIdAsync(string id)
@@ -72,7 +83,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 checkOut = utc.ToLocalTime();
             }
 
-            return new ClientHistoryResponse
+            var dto = new ClientHistoryResponse
             {
                 Service = doc["Service"].AsString,
                 AssignedDate = assignedDate,
@@ -85,8 +96,31 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                     .Select(u => u.AsString)
                     .ToList()
             };
+
+            // Extract AssignedForms
+            List<string> assignedFormIds = new();
+            if (doc.TryGetValue("AssignedForms", out var formsVal) && formsVal != BsonNull.Value && formsVal.IsBsonArray)
+            {
+                assignedFormIds = formsVal.AsBsonArray.Select(f => f.ToString()).ToList();
+            }
+            
+            // Resolve them (sync-over-async inside select is bad, but we are inside mapResult. We should do it after or await properly)
+            // But Select doesn't support await nicely without Task.WhenAll.
+            // Let's postpone resolution or do it here?
+            // ResolveAssignedFormsAsync is async.
+            // We should collect IDs and resolve later, or change Select to foreach/async loop.
+            // Returning tuple to resolve later is cleaner or just looping.
+            // Let's use a loop.
+            return (Dto: dto, FormIds: assignedFormIds);
         }).ToList();
-        return mapResult;
+
+        // Resolve forms
+        foreach(var item in mapResult)
+        {
+            item.Dto.AssignedForms = await ResolveAssignedFormsAsync(item.FormIds);
+        }
+
+        return mapResult.Select(x => x.Dto).ToList();
     }
 
     public async Task<AssignmentResponse> UpdateAssignmentAsync(string id, UpdateAssignmentWebRequest request)
@@ -147,16 +181,31 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 service = serviceVal.AsString;
             }
 
-            return new AssignmentListResponse
+            // Extract AssignedForms
+            List<string> assignedFormIds = new();
+            if (x.TryGetValue("AssignedForms", out var formsVal) && formsVal != BsonNull.Value && formsVal.IsBsonArray)
+            {
+                assignedFormIds = formsVal.AsBsonArray.Select(f => f.ToString()).ToList();
+            }
+
+            var dto = new AssignmentListResponse
             {
                 Id = x["_id"].ToString(),
                 Client = client,
                 Service = service,
                 AssignedDate = assignedDateLocal
             };
+
+            return (Dto: dto, FormIds: assignedFormIds);
         }).ToList();
 
-        return list;
+        // Resolve forms
+        foreach (var item in list)
+        {
+            item.Dto.AssignedForms = await ResolveAssignedFormsAsync(item.FormIds);
+        }
+
+        return list.Select(x => x.Dto).ToList();
     }
 
     public async Task<AssignmentTrackingResponse?> GetAssignmentTrackingAsync(string assignmentId)

@@ -1,4 +1,6 @@
-﻿namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
+﻿using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+
+namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 
 public class AssignmentListResponse
 {
@@ -6,4 +8,5 @@ public class AssignmentListResponse
     public string Client { get; set; }
     public string Service { get; set; }
     public DateTime AssignedDate { get; set; }
+    public List<AssignedFormResponse> AssignedForms { get; set; }
 }
