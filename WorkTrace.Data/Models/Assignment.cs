@@ -21,7 +21,6 @@ public class Assignment : BaseModel
     public List<MediaFile> MediaFiles { get; set; }
     public ObjectId CreatedByUser { get; set; }
     public string Comment { get; set; }
-    //Comentario
     [BsonRepresentation(BsonType.ObjectId)]
     public List<string>? AssignedForms { get; set; }
 }
