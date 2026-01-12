@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using System.Linq;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
@@ -97,20 +96,12 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                     .ToList()
             };
 
-            // Extract AssignedForms
             List<string> assignedFormIds = new();
             if (doc.TryGetValue("AssignedForms", out var formsVal) && formsVal != BsonNull.Value && formsVal.IsBsonArray)
             {
                 assignedFormIds = formsVal.AsBsonArray.Select(f => f.ToString()).ToList();
             }
-            
-            // Resolve them (sync-over-async inside select is bad, but we are inside mapResult. We should do it after or await properly)
-            // But Select doesn't support await nicely without Task.WhenAll.
-            // Let's postpone resolution or do it here?
-            // ResolveAssignedFormsAsync is async.
-            // We should collect IDs and resolve later, or change Select to foreach/async loop.
-            // Returning tuple to resolve later is cleaner or just looping.
-            // Let's use a loop.
+
             return (Dto: dto, FormIds: assignedFormIds);
         }).ToList();
 
@@ -181,7 +172,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                 service = serviceVal.AsString;
             }
 
-            // Extract AssignedForms
             List<string> assignedFormIds = new();
             if (x.TryGetValue("AssignedForms", out var formsVal) && formsVal != BsonNull.Value && formsVal.IsBsonArray)
             {
@@ -199,7 +189,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
             return (Dto: dto, FormIds: assignedFormIds);
         }).ToList();
 
-        // Resolve forms
         foreach (var item in list)
         {
             item.Dto.AssignedForms = await ResolveAssignedFormsAsync(item.FormIds);
@@ -358,7 +347,6 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         var response = _mapper.Map<AssignmentMobileResponse>(assignment);
 
-        // Resolver formularios asignados (nombre + id)
         response.AssignedForms =
             await ResolveAssignedFormsAsync(assignment.AssignedForms);
 
