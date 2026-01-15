@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-
-namespace WorkTrace.Application.DTOs.TakenRequirementDTO;
+﻿namespace WorkTrace.Application.DTOs.TakenRequirementDTO;
 
 public class CreateTakenRequirementRequest
 {

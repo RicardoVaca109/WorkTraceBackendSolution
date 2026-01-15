@@ -69,4 +69,41 @@ public class TakenRequirementService (
 
         return _mapper.Map<TakenRequirementInformationResponse>(requirement);
     }
+
+    public async Task<List<TakenRequirementInformationResponse>> GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end)
+    {
+        var user = await _userRepository.GetAsync(userId);
+        if (user is null)
+            throw new Exception("Usuario no encontrado");
+
+        var data = await _takenRequirementRepository
+            .GetByDateUserTakenRequirements(userId, start, end);
+
+        var result = new List<TakenRequirementInformationResponse>();
+
+        foreach (var item in data)
+        {
+            string? clientName = null;
+
+            if (item.Client.HasValue)
+            {
+                var client = await _clientRepository.GetAsync(item.Client.Value.ToString());
+                clientName = client?.FullName;
+            }
+
+            var dto = new TakenRequirementInformationResponse
+            {
+                Id = item.Id,
+                UserId = item.User.ToString(),
+                ClientId = item.Client?.ToString(),
+                Date = item.Date.ToLocalTime(),
+                Title = item.Title,
+                Description = item.Description
+            };
+
+            result.Add(dto);
+        }
+
+        return result;
+    }
 }

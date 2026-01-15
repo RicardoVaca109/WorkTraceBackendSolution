@@ -8,5 +8,6 @@ namespace WorkTrace.Application.Services
         Task<TakenRequirementInformationResponse> GetByIdAsync(string id);
         Task<TakenRequirementInformationResponse> CreateAsync(CreateTakenRequirementRequest request);
         Task<TakenRequirementInformationResponse> UpdateAsync(UpdateTakenRequirementRequest request);
+        Task<List<TakenRequirementInformationResponse>> GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end);
     }
 }

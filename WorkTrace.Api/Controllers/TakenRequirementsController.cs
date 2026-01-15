@@ -68,4 +68,17 @@ public class TakenRequirementsController(ITakenRequirementService takenRequireme
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [Authorize]
+    [HttpGet("user-taken-requirement/{userId}")]
+    public async Task<IActionResult> GetByUserAndDateRange(
+        string userId,
+        [FromQuery] DateTime start,
+        [FromQuery] DateTime end)
+    {
+        var result = await takenRequirementService
+            .GetByUserAndDateRangeAsync(userId, start, end);
+
+        return Ok(result);
+    }
 }
