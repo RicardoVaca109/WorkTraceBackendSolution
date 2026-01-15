@@ -18,5 +18,6 @@ public interface IAssignmentService
     Task<AssignmentMobileResponse> UpdateProgressAsync(string id, UpdateProgressRequest request);
     Task<List<AssignmentListResponse>> GetAssignmentsForListAsync(string userId);
     Task<AssignmentTrackingResponse?> GetAssignmentTrackingAsync(string assignmentId);
+    Task<AssignmentMobileResponse> GetAssignmentMobileDetailAsync(string id);
     //Task<AssignmentResponse> UpdateAssignmentMobileAsync(string id, UpdateAssignmentMobileRequest request);
 }
