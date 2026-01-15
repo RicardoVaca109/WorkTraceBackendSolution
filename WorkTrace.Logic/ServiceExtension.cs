@@ -17,5 +17,6 @@ public static class ServiceExtension
         services.AddScoped<IGeocodingService, GeocodingService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IFormTemplateService, FormTemplateService>();
+        services.AddScoped<ITakenRequirementService, TakenRequirementService>();
     }
 }
