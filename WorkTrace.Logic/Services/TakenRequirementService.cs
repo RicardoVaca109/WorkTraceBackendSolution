@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MongoDB.Bson;
 using WorkTrace.Application.DTOs.TakenRequirementDTO;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
@@ -50,22 +51,31 @@ public class TakenRequirementService (
     }
 
     public async Task<TakenRequirementInformationResponse> UpdateAsync(
-        UpdateTakenRequirementRequest request)
+    string id,
+    UpdateTakenRequirementRequest request)
     {
-        var requirement = await _takenRequirementRepository.GetAsync(request.Id);
-        if (requirement is null)
-            throw new Exception("Registro de requerimiento no encontrado");
+        var requirement = await _takenRequirementRepository.GetAsync(id);
+        if (requirement == null)
+            throw new Exception("TakenRequirement no encontrado");
 
-        if (!string.IsNullOrWhiteSpace(request.ClientId))
+        requirement.Title = string.IsNullOrWhiteSpace(request.Title)
+            ? requirement.Title
+            : request.Title;
+
+        requirement.Description = string.IsNullOrWhiteSpace(request.Description)
+            ? requirement.Description
+            : request.Description;
+
+        if (request.ClientId == null)
         {
-            var client = await _clientRepository.GetAsync(request.ClientId);
-            if (client is null)
-                throw new Exception("Cliente no encontrado");
+            requirement.Client = null;
+        }
+        else if (!string.IsNullOrWhiteSpace(request.ClientId))
+        {
+            requirement.Client = ObjectId.Parse(request.ClientId);
         }
 
-        _mapper.Map(request, requirement);
-
-        await _takenRequirementRepository.UpdateAsync(requirement.Id, requirement);
+        await _takenRequirementRepository.UpdateAsync(id, requirement);
 
         return _mapper.Map<TakenRequirementInformationResponse>(requirement);
     }

@@ -54,19 +54,13 @@ public class TakenRequirementsController(ITakenRequirementService takenRequireme
     }
 
     [Authorize]
-    [HttpPut]
+    [HttpPut("{id}")]
     public async Task<ActionResult<TakenRequirementInformationResponse>> Update(
-        [FromBody] UpdateTakenRequirementRequest request)
+    string id,
+    [FromBody] UpdateTakenRequirementRequest request)
     {
-        try
-        {
-            var result = await takenRequirementService.UpdateAsync(request);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var updated = await takenRequirementService.UpdateAsync(id, request);
+        return Ok(updated);
     }
 
     [Authorize]
