@@ -78,7 +78,7 @@ public class TakenRequirementsController(ITakenRequirementService takenRequireme
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult<List<TakenRequirementWithClientResponse>>> GetByDateAll([FromQuery] DateTime start, [FromQuery] DateTime end)
+    public async Task<ActionResult<List<TakenRequirementUserAndClientResponse>>> GetByDateAll([FromQuery] DateTime start, [FromQuery] DateTime end)
     {
         var result = await takenRequirementService.GetByDate(start, end);
         return Ok(result);

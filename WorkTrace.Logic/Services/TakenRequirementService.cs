@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
 using WorkTrace.Application.DTOs.TakenRequirementDTO;
+using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
@@ -115,14 +116,29 @@ public class TakenRequirementService (
         return result;
     }
 
-    public async Task<List<TakenRequirementWithClientResponse>> GetByDate(DateTime start, DateTime end)
+    public async Task<List<TakenRequirementUserAndClientResponse>> GetByDate(DateTime start, DateTime end)
     {
         var requirements = await _takenRequirementRepository.GetByDate(start, end);
-        var result = new List<TakenRequirementWithClientResponse>();
+        var result = new List<TakenRequirementUserAndClientResponse>();
+
         foreach (var req in requirements)
         {
-            var dto = _mapper.Map<TakenRequirementWithClientResponse>(req);
+            var dto = _mapper.Map<TakenRequirementUserAndClientResponse>(req);
 
+            var user = await _userRepository.GetAsync(req.User.ToString());
+            if (user != null)
+            {
+                dto.UserId = new UserInformationResponse
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    DocumentNumber = user.DocumentNumber,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = user.Role,
+                    IsActive = user.IsActive
+                };
+            }
             if (req.Client.HasValue)
             {
                 var client = await _clientRepository.GetAsync(req.Client.Value.ToString());
@@ -130,9 +146,9 @@ public class TakenRequirementService (
                 {
                     dto.Client = new ClientInformationResponse
                     {
-                        Id = client.Id.ToString(),
-                        DocumentNumber = client.DocumentNumber,
+                        Id = client.Id,
                         FullName = client.FullName,
+                        DocumentNumber = client.DocumentNumber,
                         Email = client.Email,
                         PhoneNumber = client.PhoneNumber
                     };

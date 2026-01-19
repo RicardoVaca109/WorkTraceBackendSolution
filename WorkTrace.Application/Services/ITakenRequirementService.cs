@@ -9,5 +9,5 @@ public interface ITakenRequirementService
     Task<TakenRequirementInformationResponse> CreateAsync(CreateTakenRequirementRequest request);
     Task<TakenRequirementInformationResponse> UpdateAsync(string id, UpdateTakenRequirementRequest request);
     Task<List<TakenRequirementWithClientResponse>> GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end);
-    Task<List<TakenRequirementWithClientResponse>> GetByDate(DateTime start, DateTime end);
+    Task<List<TakenRequirementUserAndClientResponse>> GetByDate(DateTime start, DateTime end);
 }

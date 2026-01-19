@@ -37,5 +37,12 @@ public class TakenRequirementProfile : Profile
                 opt => opt.MapFrom(src => src.User.ToString()))
             .ForMember(dest => dest.Client,
                 opt => opt.Ignore());
+        CreateMap<TakenRequirement, TakenRequirementUserAndClientResponse>()
+            .ForMember(dest => dest.Id,
+                opt => opt.MapFrom(src => src.Id.ToString()))
+            .ForMember(dest => dest.UserId,
+                opt => opt.Ignore())
+            .ForMember(dest => dest.Client,
+                opt => opt.Ignore());
     }
 }
