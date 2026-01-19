@@ -3,63 +3,50 @@ using Microsoft.AspNetCore.Mvc;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 using WorkTrace.Application.Services;
 
-namespace WorkTrace.Api.Controllers.MobileControllers;
-
-[Route("[controller]/[action]")]
-[ApiController]
-[Authorize]
-public class AssignmentMobileController(IAssignmentService assignmentService, IClientEvaluationService clientEvaluationService) : ControllerBase
+namespace WorkTrace.Api.Controllers.MobileControllers
 {
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetAssignmentsByUser(
-        string userId,
-        [FromQuery] DateTime start,
-        [FromQuery] DateTime end)
+    [Route("[controller]/[action]")]
+    [ApiController]
+    [Authorize]
+    public class AssignmentMobileController(IAssignmentService assignmentService) : ControllerBase
     {
-        var result = await assignmentService.GetAssignmentByUserandRangeAsync(userId, start, end);
-        return Ok(result);
-    }
-
-    [HttpPost("{id}/start")]
-    public async Task<IActionResult> StartAssignment(string id, [FromBody] StartAssignmentRequest request)
-    {
-        var assignment = await assignmentService.StartAssignmentAsync(id, request);
-
-        var clientSession = await clientEvaluationService.CreateSessionAsync(id);
-
-        return Ok(new
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetAssignmentsByUser(
+            string userId,
+            [FromQuery] DateTime start,
+            [FromQuery] DateTime end)
         {
-            assignment,
-            evaluation = clientSession
-        });
-    }
+            var result = await assignmentService.GetAssignmentByUserandRangeAsync(userId, start, end);
+            return Ok(result);
+        }
 
-    [HttpPost("{id}/finish")]
-    public async Task<IActionResult> FinishAssignment(string id, [FromBody] FinishAssignmentRequest request)
-    {
-        var result = await assignmentService.FinishAssignmentAsync(id, request);
-        return Ok(result);
-    }
+        [HttpPost("{id}/start")]
+        public async Task<IActionResult> StartAssignment(string id, [FromBody] StartAssignmentRequest request)
+        {
+            var result = await assignmentService.StartAssignmentAsync(id, request);
+            return Ok(result);
+        }
 
-    [HttpPut("{id}/location")]
-    public async Task<IActionResult> UpdateLocation(string id, [FromBody] UpdateLocationRequest request)
-    {
-        var result = await assignmentService.UpdateLocationAsync(id, request);
-        return Ok(result);
-    }
+        [HttpPost("{id}/finish")]
+        public async Task<IActionResult> FinishAssignment(string id, [FromBody] FinishAssignmentRequest request)
+        {
+            var result = await assignmentService.FinishAssignmentAsync(id, request);
+            return Ok(result);
+        }
 
-    [HttpPut("{id}/progress")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UpdateProgress(string id, [FromForm] UpdateProgressRequest request)
-    {
-        var result = await assignmentService.UpdateProgressAsync(id, request);
-        return Ok(result);
-    }
+        [HttpPut("{id}/location")]
+        public async Task<IActionResult> UpdateLocation(string id, [FromBody] UpdateLocationRequest request)
+        {
+            var result = await assignmentService.UpdateLocationAsync(id, request);
+            return Ok(result);
+        }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetAssignmentDetail(string id)
-    {
-        var result = await assignmentService.GetAssignmentMobileDetailAsync(id);
-        return Ok(result);
+        [HttpPut("{id}/progress")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProgress(string id, [FromForm] UpdateProgressRequest request)
+        {
+            var result = await assignmentService.UpdateProgressAsync(id, request);
+            return Ok(result);
+        }
     }
 }
