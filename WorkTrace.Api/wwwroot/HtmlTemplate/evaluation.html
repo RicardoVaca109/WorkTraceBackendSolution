@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+    <h3>Evaluación</h3>
+
+    <canvas id="signature" width="300" height="150" style="border:1px solid"></canvas>
+    <button onclick="submit()">Enviar</button>
+
+    <script>
+const token = sessionStorage.getItem("clientToken");
+
+async function submit() {
+  await fetch("/api/client-evaluation/submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Client-Token": token
+    },
+    body: JSON.stringify({
+      assignmentId: "ID",
+      formType: "FORM_ID",
+      userEvaluations: [],
+      clientSignature: {
+        signatureBase64: signature.toDataURL(),
+        signedBy: "CLIENT"
+      }
+    })
+  });
+
+  alert("Evaluación enviada");
+}
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
+using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
 using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
@@ -28,6 +29,11 @@ public static class ServiceExtension
                 .AddValidatorsFromAssemblyContaining<UpdateAssignmentMobileValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateLocationValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateProgressValidator>()
+        //AssignmentEvaluation Validations
+                .AddValidatorsFromAssemblyContaining<CreateAssignmentValidator>()
+                .AddValidatorsFromAssemblyContaining<ClientSignatureValidator>()
+                .AddValidatorsFromAssemblyContaining<FormAnswerValidator>()
+                .AddValidatorsFromAssemblyContaining<UserEvaluationValidator>()
         //Client Validations
                 .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()
@@ -58,7 +64,7 @@ public static class ServiceExtension
         services.AddAutoMapper(cfg => { }, typeof(ClientProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(StatusProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(AssignmentProfile).Assembly);
-        //services.AddAutoMapper(cfg => { }, typeof(AssignmentEvaluationProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(AssignmentEvaluationProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(FormTemplateProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(TakenRequirementProfile).Assembly);
     }

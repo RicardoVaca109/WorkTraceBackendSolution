@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Cliente</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f5f5;
+        }
+
+        .box {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>Acceso Cliente</h3>
+        <input id="email" placeholder="Email" />
+        <input id="doc" placeholder="Documento" type="password" />
+        <button onclick="login()">Ingresar</button>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+const token = new URLSearchParams(window.location.search).get("token");
+
+async function login() {
+  const res = await fetch("/api/client-evaluation/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token,
+      email: email.value,
+      documentNumber: doc.value
+    })
+  });
+
+  if (!res.ok) {
+    error.innerText = "Credenciales inválidas o sesión expirada";
+    return;
+  }
+
+  const data = await res.json();
+  sessionStorage.setItem("clientToken", data.sessionToken);
+  location.href = "evaluation.html";
+}
+    </script>
+</body>
+</html>

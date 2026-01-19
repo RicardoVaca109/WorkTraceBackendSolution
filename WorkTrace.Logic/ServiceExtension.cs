@@ -18,7 +18,7 @@ public static class ServiceExtension
         services.AddScoped<IFileService, CloudinaryFileService>();
         services.AddScoped<IFormTemplateService, FormTemplateService>();
         services.AddScoped<ITakenRequirementService, TakenRequirementService>();
-        //services.AddScoped<IClientEvaluationService, ClientEvaluationService>();
+        services.AddScoped<IClientEvaluationService, ClientEvaluationService>();
         services.AddScoped<IProductInventoryService, ProductInventoryService>();
     }
 }
