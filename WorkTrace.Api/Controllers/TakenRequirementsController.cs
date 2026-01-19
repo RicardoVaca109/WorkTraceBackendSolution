@@ -65,7 +65,7 @@ public class TakenRequirementsController(ITakenRequirementService takenRequireme
 
     [Authorize]
     [HttpGet("user-taken-requirement/{userId}")]
-    public async Task<IActionResult> GetByUserAndDateRange(
+    public async Task<ActionResult<List<TakenRequirementWithClientResponse>>> GetByUserAndDateRange(
         string userId,
         [FromQuery] DateTime start,
         [FromQuery] DateTime end)
@@ -73,6 +73,14 @@ public class TakenRequirementsController(ITakenRequirementService takenRequireme
         var result = await takenRequirementService
             .GetByUserAndDateRangeAsync(userId, start, end);
 
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<List<TakenRequirementWithClientResponse>>> GetByDateAll([FromQuery] DateTime start, [FromQuery] DateTime end)
+    {
+        var result = await takenRequirementService.GetByDate(start, end);
         return Ok(result);
     }
 }

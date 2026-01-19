@@ -17,5 +17,7 @@ public static class ServiceExtension
         //services.AddScoped<IAssignmentEvaluationRepository, AssignmentEvaluationRepository>();
         services.AddScoped<IFormTemplateRepository, FormTemplateRepository>();
         services.AddScoped<ITakenRequirementRepository, TakenRequirementRepository>();
+        //services.AddScoped<IClientEvaluationSessionRepository, ClientEvaluationSessionRepository>();
+        services.AddScoped<IProductInventoryRepository, ProductInventoryRepository>();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
+using WorkTrace.Application.DTOs.ClientDTO.Information;
 using WorkTrace.Application.DTOs.TakenRequirementDTO;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
@@ -80,40 +81,65 @@ public class TakenRequirementService (
         return _mapper.Map<TakenRequirementInformationResponse>(requirement);
     }
 
-    public async Task<List<TakenRequirementInformationResponse>> GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end)
+    public async Task<List<TakenRequirementWithClientResponse>>GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end)
     {
-        var user = await _userRepository.GetAsync(userId);
-        if (user is null)
-            throw new Exception("Usuario no encontrado");
+        var requirements =
+            await _takenRequirementRepository
+                .GetByDateUserTakenRequirements(userId, start, end);
 
-        var data = await _takenRequirementRepository
-            .GetByDateUserTakenRequirements(userId, start, end);
+        var result = new List<TakenRequirementWithClientResponse>();
 
-        var result = new List<TakenRequirementInformationResponse>();
-
-        foreach (var item in data)
+        foreach (var req in requirements)
         {
-            string? clientName = null;
+            var dto = _mapper.Map<TakenRequirementWithClientResponse>(req);
 
-            if (item.Client.HasValue)
+            if (req.Client.HasValue)
             {
-                var client = await _clientRepository.GetAsync(item.Client.Value.ToString());
-                clientName = client?.FullName;
+                var client = await _clientRepository.GetAsync(req.Client.Value.ToString());
+                if (client != null)
+                {
+                    dto.Client = new ClientInformationResponse
+                    {
+                        Id = client.Id.ToString(),
+                        DocumentNumber = client.DocumentNumber,
+                        FullName = client.FullName,
+                        Email = client.Email,
+                        PhoneNumber = client.PhoneNumber
+                    };
+                }
             }
-
-            var dto = new TakenRequirementInformationResponse
-            {
-                Id = item.Id,
-                UserId = item.User.ToString(),
-                ClientId = item.Client?.ToString(),
-                Date = item.Date.ToLocalTime(),
-                Title = item.Title,
-                Description = item.Description
-            };
 
             result.Add(dto);
         }
 
+        return result;
+    }
+
+    public async Task<List<TakenRequirementWithClientResponse>> GetByDate(DateTime start, DateTime end)
+    {
+        var requirements = await _takenRequirementRepository.GetByDate(start, end);
+        var result = new List<TakenRequirementWithClientResponse>();
+        foreach (var req in requirements)
+        {
+            var dto = _mapper.Map<TakenRequirementWithClientResponse>(req);
+
+            if (req.Client.HasValue)
+            {
+                var client = await _clientRepository.GetAsync(req.Client.Value.ToString());
+                if (client != null)
+                {
+                    dto.Client = new ClientInformationResponse
+                    {
+                        Id = client.Id.ToString(),
+                        DocumentNumber = client.DocumentNumber,
+                        FullName = client.FullName,
+                        Email = client.Email,
+                        PhoneNumber = client.PhoneNumber
+                    };
+                }
+            }
+            result.Add(dto);
+        }
         return result;
     }
 }

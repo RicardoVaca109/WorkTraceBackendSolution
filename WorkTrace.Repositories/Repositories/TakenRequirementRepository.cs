@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Runtime.CompilerServices;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Data;
 using WorkTrace.Data.Models;
@@ -23,6 +24,15 @@ public class TakenRequirementRepository : GenericRepository<TakenRequirement>, I
             Builders<TakenRequirement>.Filter.Lte(x => x.Date, endDate)
         );
 
+        return await Collection.Find(filter).ToListAsync();
+    }
+
+    public async Task<List<TakenRequirement>> GetByDate(DateTime startDate, DateTime endDate)
+    {
+        var filter = Builders<TakenRequirement>.Filter.And(
+            Builders<TakenRequirement>.Filter.Gte(x => x.Date, startDate),
+            Builders<TakenRequirement>.Filter.Lte(x => x.Date, endDate)
+        );
         return await Collection.Find(filter).ToListAsync();
     }
 }
