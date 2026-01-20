@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
@@ -131,10 +131,10 @@
                     <div class="question">
                         <label>${q.questionText}</label>
                         <input
-                            type="${q.answerType === 1 ? 'number' : 'text'}"
+                            type="${q.answerType === 2 ? 'number' : 'text'}"
                             data-tech="${idx}"
                             data-question="${qIdx}"
-                            placeholder="${q.answerType === 1 ? '1 - 5' : 'Respuesta...'}"
+                            placeholder="${q.answerType === 2 ? '1 - 5' : 'Respuesta...'}"
                         />
                     </div>
                 `).join("")}
@@ -245,7 +245,7 @@
                         q.answerType
                     );
 
-                    if (q.answerType === 1) { // Numérico
+                    if (q.answerType === 2) { // Numérico
                         formData.append(
                             `UserEvaluations[${i}].Answers[${j}].NumericValue`,
                             val || "0" // Enviar 0 si está vacío para evitar error
