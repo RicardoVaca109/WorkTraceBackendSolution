@@ -34,7 +34,7 @@ public class ClientEvaluationController(IClientEvaluationService clientEvaluatio
         return Ok();
     }
 
-    [ClientEvaluationAuthorize]
+    //[ClientEvaluationAuthorize]
     [HttpGet("form/{assignmentId}")]
     public async Task<IActionResult> GetEvaluationForm(string assignmentId)
     {
