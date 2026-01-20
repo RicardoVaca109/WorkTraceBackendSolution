@@ -1,6 +1,4 @@
-﻿using WorkTrace.Data.Models;
-
-namespace WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
+﻿namespace WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 
 public class AssignmentEvaluationFormResponse
 {
