@@ -214,6 +214,7 @@
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
             const formData = new FormData();
+            formData.append("AssignmentId", assignmentId);
             // Asumiendo que todos usan el mismo template, tomamos el del primero
             formData.append("FormType", evaluationData.evaluations[0].formTemplateId);
             formData.append("SignedBy", "CLIENTE");
@@ -234,6 +235,10 @@
                     formData.append(
                         `UserEvaluations[${i}].Answers[${j}].QuestionKey`,
                         q.questionKey
+                    );
+                    formData.append(
+                        `UserEvaluations[${i}].Answers[${j}].QuestionValue`,
+                        q.questionText
                     );
                     formData.append(
                         `UserEvaluations[${i}].Answers[${j}].AnswerType`,
