@@ -115,7 +115,7 @@
         async function login() {
             error.innerText = "";
 
-            const res = await fetch("/api/client-evaluation/login", {
+            const res = await fetch("/api/ClientEvaluation/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

@@ -44,7 +44,7 @@
             formData.append("ClientSignature", blob, "signature.png");
             formData.append("UserEvaluations", JSON.stringify([]));
 
-            await fetch("/api/client-evaluation/submit", {
+            await fetch("/api/ClientEvaluation/submit", {
                 method: "POST",
                 headers: {
                     "X-Client-Token": token
