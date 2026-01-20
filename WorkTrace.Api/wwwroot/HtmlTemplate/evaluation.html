@@ -272,11 +272,30 @@
                 } else {
                     const errText = await res.text();
                     console.error("Error submit:", errText);
-                    alert("Error al enviar evaluación");
+
+                    let msg = "Error al enviar evaluación";
+                    try {
+                        const json = JSON.parse(errText);
+                        // Common patterns in ASP.NET Core APIs
+                        if (json.errors) {
+                            // ValidationProblemDetails
+                            msg = Object.values(json.errors).flat().join("\n");
+                        } else if (json.message) {
+                            msg = json.message;
+                        } else if (json.title) {
+                            msg = json.title;
+                        } else {
+                            msg = errText; // Fallback if valid JSON but unknown structure
+                        }
+                    } catch {
+                        // Not JSON, use raw text if not empty
+                        if (errText) msg = errText;
+                    }
+                    alert(msg);
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión");
+                alert("Error de conexión: " + error.message);
             }
         }
 
