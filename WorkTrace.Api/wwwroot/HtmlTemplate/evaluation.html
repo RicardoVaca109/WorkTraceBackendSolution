@@ -47,7 +47,7 @@
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            box-sizing: border-box; /* Asegura que el padding no desborde */
+            box-sizing: border-box;
         }
 
         canvas {
@@ -55,7 +55,7 @@
             border-radius: 4px;
             width: 100%;
             height: 160px;
-            touch-action: none; /* Crucial para evitar scroll nativo */
+            touch-action: none;
             background: #fff;
             cursor: crosshair;
         }
@@ -71,8 +71,13 @@
             cursor: pointer;
         }
 
-        button:hover {
-            background: #125ca1;
+            button:hover {
+                background: #125ca1;
+            }
+
+        .btn-clear {
+            margin-top: 8px;
+            background: #777;
         }
     </style>
 </head>
@@ -84,12 +89,15 @@
 
     <div class="card">
         <div class="form-title">Comentarios adicionales</div>
-        <textarea id="clientComment" rows="3" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; box-sizing: border-box;" placeholder="Comentarios opcionales..."></textarea>
+        <textarea id="clientComment" rows="3"
+                  style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; box-sizing: border-box;"
+                  placeholder="Comentarios opcionales..."></textarea>
     </div>
 
     <div class="card">
         <p><strong>Firma del cliente</strong></p>
         <canvas id="signature" width="320" height="160"></canvas>
+        <button type="button" class="btn-clear" onclick="clearSignature()">Limpiar firma</button>
     </div>
 
     <button onclick="submitEvaluation()">Enviar evaluación</button>
@@ -116,73 +124,64 @@
                 evaluationData = await res.json();
                 renderEvaluation(evaluationData);
             } catch (error) {
-                console.error(error);
                 alert("No se pudo cargar la evaluación.");
             }
         }
 
         function renderEvaluation(data) {
             const container = document.getElementById("evaluationContainer");
-            container.innerHTML = ""; // Limpiar por si acaso
+            container.innerHTML = "";
 
             data.evaluations.forEach((e, idx) => {
                 const card = document.createElement("div");
                 card.className = "card";
 
                 card.innerHTML = `
-                <div class="tech-title">${e.technicianName}</div>
-                <div class="form-title">${e.formName}</div>
-                ${e.questions.map((q, qIdx) => `
-                    <div class="question">
-                        <label>${q.questionText}</label>
-                        <input
-                            type="${q.answerType === 2 ? 'number' : 'text'}"
-                            data-tech="${idx}"
-                            data-question="${qIdx}"
-                            placeholder="${q.answerType === 2 ? '1 - 5' : 'Respuesta...'}"
-                        />
-                    </div>
-                `).join("")}
-            `;
+                        <div class="tech-title">${e.technicianName}</div>
+                        <div class="form-title">${e.formName}</div>
+                        ${e.questions.map((q, qIdx) => `
+                            <div class="question">
+                                <label>${q.questionText}</label>
+                                <input
+                                    type="${q.answerType === 2 ? 'number' : 'text'}"
+                                    data-tech="${idx}"
+                                    data-question="${qIdx}"
+                                    placeholder="${q.answerType === 2 ? '1 - 5' : 'Respuesta...'}"
+                                    ${q.answerType === 2 ? 'min="1" max="5" step="1"' : ''}
+                                />
+                            </div>
+                        `).join("")}
+                    `;
 
                 container.appendChild(card);
             });
         }
 
         /* ===============================
-           FIRMA (MOUSE + TOUCH)
+           FIRMA
         ================================ */
         const canvas = document.getElementById("signature");
         const ctx = canvas.getContext("2d");
         let drawing = false;
 
-        // Función unificada para obtener coordenadas
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            // Soporte para touch o mouse
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: x - rect.left, y: y - rect.top };
         }
 
-        // Iniciar trazo
         function startDraw(e) {
-            if (e.type === 'touchstart') e.preventDefault(); // Evita scroll
+            if (e.type.includes("touch")) e.preventDefault();
             drawing = true;
             const { x, y } = getPos(e);
             ctx.beginPath();
             ctx.moveTo(x, y);
         }
 
-        // Mover trazo
         function moveDraw(e) {
             if (!drawing) return;
-            if (e.type === 'touchmove') e.preventDefault(); // Evita scroll
-
+            if (e.type.includes("touch")) e.preventDefault();
             const { x, y } = getPos(e);
             ctx.lineWidth = 2;
             ctx.lineCap = "round";
@@ -191,20 +190,21 @@
             ctx.stroke();
         }
 
-        // Terminar trazo
         function endDraw(e) {
-            if (e.type === 'touchend') e.preventDefault();
+            if (e.type.includes("touch")) e.preventDefault();
             drawing = false;
-            ctx.beginPath(); // Reset path
+            ctx.beginPath();
         }
 
-        // Eventos Ratón
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         canvas.addEventListener("mousedown", startDraw);
         canvas.addEventListener("mousemove", moveDraw);
         canvas.addEventListener("mouseup", endDraw);
         canvas.addEventListener("mouseleave", endDraw);
 
-        // Eventos Táctiles (Con passive: false)
         canvas.addEventListener("touchstart", startDraw, { passive: false });
         canvas.addEventListener("touchmove", moveDraw, { passive: false });
         canvas.addEventListener("touchend", endDraw, { passive: false });
@@ -215,57 +215,60 @@
         async function submitEvaluation() {
             if (!evaluationData) return;
 
-            // Convertir canvas a Blob
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            // Validar firma
+            const empty = document.createElement("canvas");
+            empty.width = canvas.width;
+            empty.height = canvas.height;
+            if (canvas.toDataURL() === empty.toDataURL()) {
+                alert("Por favor firme antes de enviar.");
+                return;
+            }
+
+            // Validar respuestas 1-5
+            for (let i = 0; i < evaluationData.evaluations.length; i++) {
+                const e = evaluationData.evaluations[i];
+                for (let j = 0; j < e.questions.length; j++) {
+                    const q = e.questions[j];
+                    const input = document.querySelector(
+                        `input[data-tech="${i}"][data-question="${j}"]`
+                    );
+                    const val = input.value;
+
+                    if (q.answerType === 2) {
+                        const num = Number(val);
+                        if (!Number.isInteger(num) || num < 1 || num > 5) {
+                            alert(`La respuesta "${q.questionText}" debe ser un número entre 1 y 5`);
+                            input.focus();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
 
             const formData = new FormData();
             formData.append("AssignmentId", assignmentId);
-            // Asumiendo que todos usan el mismo template, tomamos el del primero
             formData.append("FormType", evaluationData.evaluations[0].formTemplateId);
             formData.append("SignedBy", "CLIENTE");
             formData.append("ClientSignature", blob, "firma.png");
-            
-            // Agregar comentario del cliente
-            const comment = document.getElementById("clientComment").value || "";
-            formData.append("ClientComment", comment);
+            formData.append("ClientComment", document.getElementById("clientComment").value || "");
 
-            // Recorrer evaluaciones y preguntas
             evaluationData.evaluations.forEach((e, i) => {
                 formData.append(`UserEvaluations[${i}].UserId`, e.technicianId);
-
                 e.questions.forEach((q, j) => {
                     const input = document.querySelector(
                         `input[data-tech="${i}"][data-question="${j}"]`
                     );
+                    const val = input.value || "";
 
-                    // Validar que se haya respondido
-                    const val = input.value;
-                    
-                    formData.append(
-                        `UserEvaluations[${i}].Answers[${j}].QuestionKey`,
-                        q.questionKey
-                    );
-                    formData.append(
-                        `UserEvaluations[${i}].Answers[${j}].QuestionValue`,
-                        q.questionText
-                    );
-                    formData.append(
-                        `UserEvaluations[${i}].Answers[${j}].AnswerType`,
-                        q.answerType
-                    );
+                    formData.append(`UserEvaluations[${i}].Answers[${j}].QuestionKey`, q.questionKey);
+                    formData.append(`UserEvaluations[${i}].Answers[${j}].QuestionValue`, q.questionText);
+                    formData.append(`UserEvaluations[${i}].Answers[${j}].AnswerType`, q.answerType);
+                    formData.append(`UserEvaluations[${i}].Answers[${j}].Answer`, val);
 
-                    // SIEMPRE enviar Answer (incluso si es numérico) para satisfacer validación [Required]
-                    formData.append(
-                        `UserEvaluations[${i}].Answers[${j}].Answer`,
-                        val || ""
-                    );
-
-                    // Si es numérico, enviamos TAMBIÉN NumericValue
-                    if (q.answerType === 2) { 
-                        formData.append(
-                            `UserEvaluations[${i}].Answers[${j}].NumericValue`,
-                            val || "0" 
-                        );
+                    if (q.answerType === 2) {
+                        formData.append(`UserEvaluations[${i}].Answers[${j}].NumericValue`, val || "0");
                     }
                 });
             });
@@ -279,38 +282,14 @@
 
                 if (res.ok) {
                     alert("Evaluación enviada correctamente");
-                    // Opcional: Redirigir o limpiar
                 } else {
-                    const errText = await res.text();
-                    console.error("Error submit:", errText);
-
-                    let msg = "Error al enviar evaluación";
-                    try {
-                        const json = JSON.parse(errText);
-                        // Common patterns in ASP.NET Core APIs
-                        if (json.errors) {
-                            // ValidationProblemDetails
-                            msg = Object.values(json.errors).flat().join("\n");
-                        } else if (json.message) {
-                            msg = json.message;
-                        } else if (json.title) {
-                            msg = json.title;
-                        } else {
-                            msg = errText; // Fallback if valid JSON but unknown structure
-                        }
-                    } catch {
-                        // Not JSON, use raw text if not empty
-                        if (errText) msg = errText;
-                    }
-                    alert(msg);
+                    alert(await res.text());
                 }
-            } catch (error) {
-                console.error(error);
-                alert("Error de conexión: " + error.message);
+            } catch (err) {
+                alert("Error de conexión");
             }
         }
 
-        // Iniciar
         loadEvaluation();
     </script>
 </body>
