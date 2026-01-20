@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
-using WorkTrace.Application.Configurations;
 using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 using WorkTrace.Application.DTOs.ClientSessionDTO;
 using WorkTrace.Application.Repositories;
@@ -118,5 +116,4 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
         session.IsUsed = true;
         await clientEvaluationSessionRepository.UpdateAsync(session.Id, session);
     }
-
 }

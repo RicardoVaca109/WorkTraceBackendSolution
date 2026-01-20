@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Runtime.CompilerServices;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Data;
 using WorkTrace.Data.Models;
