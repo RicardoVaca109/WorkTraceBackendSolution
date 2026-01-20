@@ -132,6 +132,7 @@
 
             const data = await res.json();
             sessionStorage.setItem("clientToken", data.sessionToken);
+            sessionStorage.setItem("assignmentId", data.assignmentId);
             location.href = "evaluation.html";
         }
     </script>

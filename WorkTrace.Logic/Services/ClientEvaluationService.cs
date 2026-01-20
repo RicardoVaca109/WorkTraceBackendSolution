@@ -68,6 +68,7 @@ public class ClientEvaluationService(
         return new ClientEvaluationLoginResponse
         {
             SessionToken = session.Token,
+            AssignmentId = session.AssignmentId.ToString(),
             ExpiresAt = session.ExpiresAt
         };
     }
