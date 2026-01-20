@@ -83,6 +83,11 @@
     <div id="evaluationContainer"></div>
 
     <div class="card">
+        <div class="form-title">Comentarios adicionales</div>
+        <textarea id="clientComment" rows="3" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; box-sizing: border-box;" placeholder="Comentarios opcionales..."></textarea>
+    </div>
+
+    <div class="card">
         <p><strong>Firma del cliente</strong></p>
         <canvas id="signature" width="320" height="160"></canvas>
     </div>
@@ -219,6 +224,10 @@
             formData.append("FormType", evaluationData.evaluations[0].formTemplateId);
             formData.append("SignedBy", "CLIENTE");
             formData.append("ClientSignature", blob, "firma.png");
+            
+            // Agregar comentario del cliente
+            const comment = document.getElementById("clientComment").value || "";
+            formData.append("ClientComment", comment);
 
             // Recorrer evaluaciones y preguntas
             evaluationData.evaluations.forEach((e, i) => {
@@ -245,15 +254,17 @@
                         q.answerType
                     );
 
-                    if (q.answerType === 2) { // Numérico
+                    // SIEMPRE enviar Answer como string (requerido por validación)
+                    formData.append(
+                        `UserEvaluations[${i}].Answers[${j}].Answer`,
+                        val || ""
+                    );
+
+                    // Si es numérico, enviamos TAMBIÉN NumericValue
+                    if (q.answerType === 2) { 
                         formData.append(
                             `UserEvaluations[${i}].Answers[${j}].NumericValue`,
-                            val || "0" // Enviar 0 si está vacío para evitar error
-                        );
-                    } else { // Texto
-                        formData.append(
-                            `UserEvaluations[${i}].Answers[${j}].Answer`,
-                            val || ""
+                            val || "0" 
                         );
                     }
                 });
