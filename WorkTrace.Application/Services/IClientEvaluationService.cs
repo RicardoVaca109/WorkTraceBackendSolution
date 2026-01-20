@@ -9,4 +9,5 @@ public interface IClientEvaluationService
     Task<CreateEvaluationSessionResponse> CreateSessionAsync(string assignmentId);
     Task<ClientEvaluationLoginResponse> LoginAsync(ClientEvaluationLoginRequest request);
     Task SubmitEvaluationAsync(CreateAssignmentEvaluationRequest request, ClientEvaluationSession session);
+    Task<AssignmentEvaluationFormResponse> GetEvaluationFormAsync(string assignmentId);
 }

@@ -33,4 +33,11 @@ public class ClientEvaluationController(IClientEvaluationService clientEvaluatio
         await clientEvaluationService.SubmitEvaluationAsync(request, session!);
         return Ok();
     }
+
+    [ClientEvaluationAuthorize]
+    [HttpGet("form/{assignmentId}")]
+    public async Task<IActionResult> GetEvaluationForm(string assignmentId)
+    {
+        return Ok(await clientEvaluationService.GetEvaluationFormAsync(assignmentId));
+    }
 }

@@ -2,178 +2,224 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Evaluación</title>
+    <title>Evaluación del Servicio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <style>
         body {
             font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
             padding: 16px;
         }
 
-        canvas {
-            border: 1px solid #000;
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.1);
+        }
+
+        .tech-title {
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .form-title {
+            font-weight: bold;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+
+        .question {
+            margin-bottom: 12px;
+        }
+
+        input[type="number"], input[type="text"] {
             width: 100%;
-            max-width: 320px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
             height: 160px;
             touch-action: none;
+            background: #fff;
         }
 
         button {
-            margin-top: 20px;
-            padding: 12px;
             width: 100%;
+            padding: 14px;
             font-size: 16px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
         }
+
+            button:hover {
+                background: #125ca1;
+            }
     </style>
 </head>
 
 <body>
-    <h3>Evaluación</h3>
+    <h2>Evaluación del Servicio</h2>
 
-    <!-- FIRMA -->
-    <p>Firma del cliente:</p>
-    <canvas id="signature" width="320" height="160"></canvas>
+    <div id="evaluationContainer"></div>
+
+    <div class="card">
+        <p><strong>Firma del cliente</strong></p>
+        <canvas id="signature" width="320" height="160"></canvas>
+    </div>
 
     <button onclick="submitEvaluation()">Enviar evaluación</button>
 
     <script>
-        /* =======================
-           FIRMA (MOUSE + TOUCH)
-        ======================= */
+        const API_URL = "https://worktraceapi.onrender.com";
+        const token = sessionStorage.getItem("clientToken");
+        const assignmentId = sessionStorage.getItem("assignmentId");
+
+        let evaluationData = null;
+
+        /* ===============================
+           CARGAR FORMULARIOS
+        ================================ */
+        async function loadEvaluation() {
+            const res = await fetch(
+                `${API_URL}/api/ClientEvaluation/form/${assignmentId}`,
+                { headers: { "X-Client-Token": token } }
+            );
+
+            evaluationData = await res.json();
+            renderEvaluation(evaluationData);
+        }
+
+        function renderEvaluation(data) {
+            const container = document.getElementById("evaluationContainer");
+
+            data.evaluations.forEach((e, idx) => {
+                const card = document.createElement("div");
+                card.className = "card";
+
+                card.innerHTML = `
+                <div class="tech-title">${e.technicianName}</div>
+                <div class="form-title">${e.formName}</div>
+                ${e.questions.map((q, qIdx) => `
+                    <div class="question">
+                        <label>${q.questionText}</label>
+                        <input
+                            type="${q.answerType === 1 ? 'number' : 'text'}"
+                            data-tech="${idx}"
+                            data-question="${qIdx}"
+                        />
+                    </div>
+                `).join("")}
+            `;
+
+                container.appendChild(card);
+            });
+        }
+
+        /* ===============================
+           FIRMA
+        ================================ */
         const canvas = document.getElementById("signature");
         const ctx = canvas.getContext("2d");
         let drawing = false;
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            if (e.touches) {
-                return {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                };
-            }
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
+            const t = e.touches ? e.touches[0] : e;
+            return { x: t.clientX - rect.left, y: t.clientY - rect.top };
         }
 
-        function startDraw(e) {
-            e.preventDefault();
+        canvas.addEventListener("mousedown", e => {
             drawing = true;
-            const pos = getPos(e);
+            const p = getPos(e);
             ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+            ctx.moveTo(p.x, p.y);
+        });
 
-        function draw(e) {
+        canvas.addEventListener("mousemove", e => {
             if (!drawing) return;
-            e.preventDefault();
-            const pos = getPos(e);
-            ctx.lineWidth = 2;
-            ctx.lineCap = "round";
-            ctx.strokeStyle = "#000";
-            ctx.lineTo(pos.x, pos.y);
+            const p = getPos(e);
+            ctx.lineTo(p.x, p.y);
             ctx.stroke();
-        }
+        });
 
-        function endDraw(e) {
-            e.preventDefault();
-            drawing = false;
+        canvas.addEventListener("mouseup", () => drawing = false);
+        canvas.addEventListener("touchstart", e => {
+            drawing = true;
+            const p = getPos(e);
             ctx.beginPath();
-        }
+            ctx.moveTo(p.x, p.y);
+        });
 
-        canvas.addEventListener("mousedown", startDraw);
-        canvas.addEventListener("mousemove", draw);
-        canvas.addEventListener("mouseup", endDraw);
-        canvas.addEventListener("mouseleave", endDraw);
-
-        canvas.addEventListener("touchstart", startDraw, { passive: false });
-        canvas.addEventListener("touchmove", draw, { passive: false });
-        canvas.addEventListener("touchend", endDraw);
-
-        /* =======================
-           SUBMIT (OPCIÓN A)
-        ======================= */
+        /* ===============================
+           SUBMIT
+        ================================ */
         async function submitEvaluation() {
-            const token = sessionStorage.getItem("clientToken");
-
-            if (!token) {
-                alert("Sesión inválida");
-                return;
-            }
-
-            // Convertir firma a imagen
-            const blob = await new Promise(resolve =>
-                canvas.toBlob(resolve, "image/png")
-            );
+            const blob = await new Promise(r => canvas.toBlob(r));
 
             const formData = new FormData();
-
-            // ===== CAMPOS PRINCIPALES =====
-            formData.append("AssignmentId", "ID_DEL_ASSIGNMENT");
-            formData.append("FormType", "ID_DEL_FORMULARIO");
+            formData.append("FormType", evaluationData.evaluations[0].formTemplateId);
             formData.append("SignedBy", "CLIENTE");
-            formData.append("ClientSignature", blob, "signature.png");
-            formData.append("ClientComment", "Evaluación completada");
+            formData.append("ClientSignature", blob);
 
-            // ===== USER EVALUATIONS (OPCIÓN A CORRECTA) =====
-            // Ejemplo: 1 usuario evaluado con 2 preguntas
+            evaluationData.evaluations.forEach((e, i) => {
+                formData.append(`UserEvaluations[${i}].UserId`, e.technicianId);
 
-            formData.append("UserEvaluations[0].UserId", "USER_ID");
+                e.questions.forEach((q, j) => {
+                    const input = document.querySelector(
+                        `input[data-tech="${i}"][data-question="${j}"]`
+                    );
 
-            // Pregunta 1
-            formData.append(
-                "UserEvaluations[0].Answers[0].QuestionKey",
-                "q1"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[0].QuestionValue",
-                "Calidad del servicio"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[0].AnswerType",
-                "Numeric"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[0].NumericValue",
-                "5"
-            );
+                    formData.append(
+                        `UserEvaluations[${i}].Answers[${j}].QuestionKey`,
+                        q.questionKey
+                    );
+                    formData.append(
+                        `UserEvaluations[${i}].Answers[${j}].AnswerType`,
+                        q.answerType
+                    );
 
-            // Pregunta 2
-            formData.append(
-                "UserEvaluations[0].Answers[1].QuestionKey",
-                "q2"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[1].QuestionValue",
-                "Puntualidad"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[1].AnswerType",
-                "Numeric"
-            );
-            formData.append(
-                "UserEvaluations[0].Answers[1].NumericValue",
-                "4"
-            );
+                    if (q.answerType === 1)
+                        formData.append(
+                            `UserEvaluations[${i}].Answers[${j}].NumericValue`,
+                            input.value
+                        );
+                    else
+                        formData.append(
+                            `UserEvaluations[${i}].Answers[${j}].Answer`,
+                            input.value
+                        );
+                });
+            });
 
-            const res = await fetch("/api/ClientEvaluation/submit", {
+            const res = await fetch(`${API_URL}/api/ClientEvaluation/submit`, {
                 method: "POST",
-                headers: {
-                    "X-Client-Token": token
-                },
+                headers: { "X-Client-Token": token },
                 body: formData
             });
 
-            if (!res.ok) {
-                alert("Error al enviar la evaluación");
-                return;
-            }
-
-            alert("Evaluación enviada correctamente");
+            if (res.ok) alert("Evaluación enviada correctamente");
+            else alert("Error al enviar evaluación");
         }
+
+        loadEvaluation();
     </script>
 </body>
 </html>

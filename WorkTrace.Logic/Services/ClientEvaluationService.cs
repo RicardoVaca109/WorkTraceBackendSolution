@@ -2,13 +2,23 @@
 using MongoDB.Bson;
 using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 using WorkTrace.Application.DTOs.ClientSessionDTO;
+using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
+using WorkTrace.Repositories.Repositories;
 
 namespace WorkTrace.Logic.Services;
 
-public class ClientEvaluationService(IAssignmentRepository assignmentRepository, IClientRepository clientRepository, IClientEvaluationSessionRepository clientEvaluationSessionRepository, IAssignmentEvaluationRepository assignmentEvaluationRepository, IFileService fileService, IConfiguration configuration)
+public class ClientEvaluationService(
+    IAssignmentRepository assignmentRepository, 
+    IUserRepository userRepository, 
+    IFormTemplateRepository formTemplateRepository, 
+    IClientRepository clientRepository, 
+    IClientEvaluationSessionRepository clientEvaluationSessionRepository, 
+    IAssignmentEvaluationRepository assignmentEvaluationRepository, 
+    IFileService fileService, 
+    IConfiguration configuration)
     : IClientEvaluationService
 {
     private readonly string _publicBaseUrl = configuration["QREvaluationSettings:PublicBaseUrl"]
@@ -115,5 +125,76 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
 
         session.IsUsed = true;
         await clientEvaluationSessionRepository.UpdateAsync(session.Id, session);
+    }
+    public async Task<AssignmentEvaluationFormResponse> GetEvaluationFormAsync(
+    string assignmentId)
+    {
+        var assignment = await assignmentRepository.GetAsync(assignmentId)
+            ?? throw new Exception("Assignment no encontrado");
+
+        var technicianIds = assignment.Users
+            .Select(u => u.ToString())
+            .ToList();
+
+        var technicians = new List<User>();
+
+        foreach (var techId in technicianIds)
+        {
+            var user = await userRepository.GetAsync(techId);
+            if (user != null)
+                technicians.Add(user);
+        }
+
+        var formTemplateIds = assignment.AssignedForms?
+            .Select(ObjectId.Parse)
+            .ToList() ?? new List<ObjectId>();
+
+        var formTemplates = await formTemplateRepository.GetManyAsync(
+            f => formTemplateIds.Contains(ObjectId.Parse(f.Id))
+        );
+
+        var existingEvaluations =
+            await assignmentEvaluationRepository.GetByAssignmentAsync(
+                ObjectId.Parse(assignment.Id)
+            );
+
+        var evaluations = new List<TechnicianEvaluationFormResponse>();
+
+        foreach (var technician in technicians)
+        {
+            foreach (var form in formTemplates)
+            {
+                var isCompleted = existingEvaluations.Any(e =>
+                    e.FormTemplateId == ObjectId.Parse(form.Id) &&
+                    e.UserEvaluations.Any(ue =>
+                        ue.UserId == ObjectId.Parse(technician.Id))
+                );
+
+                evaluations.Add(new TechnicianEvaluationFormResponse
+                {
+                    TechnicianId = technician.Id,
+                    TechnicianName = technician.FullName,
+
+                    FormTemplateId = form.Id,
+                    FormName = form.Name,
+
+                    IsCompleted = isCompleted,
+
+                    Questions = form.Questions.Select(q => new FormQuestionResponse
+                    {
+                        Id = q.Id.ToString(),
+                        QuestionKey = q.QuestionKey,
+                        QuestionText = q.QuestionText,
+                        AnswerType = q.AnswerType
+                    }).ToList()
+                });
+            }
+        }
+        return new AssignmentEvaluationFormResponse
+        {
+            AssignmentId = assignment.Id,
+            ClientId = assignment.Client.ToString(),
+            Evaluations = evaluations
+        };
     }
 }
