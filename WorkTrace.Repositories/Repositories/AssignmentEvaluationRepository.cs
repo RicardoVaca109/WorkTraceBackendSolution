@@ -27,4 +27,12 @@ public class AssignmentEvaluationRepository : GenericRepository<AssignmentEvalua
             x.FormTemplateId == formTemplateId
         ).FirstOrDefaultAsync();
     }
+
+    public async Task<List<AssignmentEvaluation>>GetByDateRangeAsync(DateTime start, DateTime end)
+    {
+        return await Collection.Find(x =>
+            x.CreatedAt >= start &&
+            x.CreatedAt <= end
+        ).ToListAsync();
+    }
 }

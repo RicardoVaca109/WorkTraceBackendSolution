@@ -7,4 +7,5 @@ public interface IAssignmentEvaluationRepository : IGenericRepository<Assignment
 {
     Task<List<AssignmentEvaluation>> GetByAssignmentAsync(ObjectId assignmentId);
     Task<AssignmentEvaluation?> GetByAssignmentAndFormAsync(ObjectId assignmentId, ObjectId formTemplateId);
+    Task<List<AssignmentEvaluation>> GetByDateRangeAsync(DateTime start, DateTime end);
 }
