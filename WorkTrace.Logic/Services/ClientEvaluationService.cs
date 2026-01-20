@@ -148,8 +148,10 @@ public class ClientEvaluationService(
             .Select(ObjectId.Parse)
             .ToList() ?? new List<ObjectId>();
 
+        var formTemplateStringIds = formTemplateIds.Select(id => id.ToString()).ToList();
+
         var formTemplates = await formTemplateRepository.GetManyAsync(
-            f => formTemplateIds.Contains(ObjectId.Parse(f.Id))
+            f => formTemplateStringIds.Contains(f.Id)
         );
 
         var existingEvaluations =
