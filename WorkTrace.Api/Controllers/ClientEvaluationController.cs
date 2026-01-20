@@ -25,8 +25,9 @@ public class ClientEvaluationController(IClientEvaluationService clientEvaluatio
 
     [HttpPost("submit")]
     [ClientEvaluationAuthorize]
+    [Consumes("multipart/form-data")]
     public async Task<IActionResult> Submit(
-        CreateAssignmentEvaluationRequest request)
+    [FromForm] CreateAssignmentEvaluationRequest request)
     {
         var session = HttpContext.Items["ClientSession"] as ClientEvaluationSession;
         await clientEvaluationService.SubmitEvaluationAsync(request, session!);

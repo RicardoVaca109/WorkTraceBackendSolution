@@ -20,9 +20,6 @@ public class AssignmentEvaluationProfile : Profile
             .ForMember(dest => dest.ClientComment,
                 opt => opt.MapFrom(src => src.ClientComment))
 
-            .ForMember(dest => dest.ClientSignature,
-                opt => opt.MapFrom(src => src.ClientSignature))
-
             .ForMember(dest => dest.CreatedAt,
                 opt => opt.MapFrom(_ => DateTime.UtcNow));
 
@@ -52,13 +49,5 @@ public class AssignmentEvaluationProfile : Profile
                 opt => opt.MapFrom(src => src.Answer))
             .ForMember(dest => dest.NumericValue,
                 opt => opt.MapFrom(src => src.NumericValue));
-
-        CreateMap<ClientSignatureRequest, ClientSignature>()
-            .ForMember(dest => dest.SignatureBase64,
-                opt => opt.MapFrom(src => src.SignatureBase64))
-            .ForMember(dest => dest.SignedBy,
-                opt => opt.MapFrom(src => src.SignedBy))
-            .ForMember(dest => dest.SignedAt,
-                opt => opt.MapFrom(_ => DateTime.UtcNow));
     }
 }

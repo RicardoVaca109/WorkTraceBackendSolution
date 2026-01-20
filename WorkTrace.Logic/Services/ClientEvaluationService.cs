@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using WorkTrace.Application.Configurations;
 using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
@@ -9,10 +10,11 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class ClientEvaluationService(IAssignmentRepository assignmentRepository, IClientRepository clientRepository, IClientEvaluationSessionRepository clientEvaluationSessionRepository, IAssignmentEvaluationRepository assignmentEvaluationRepository, IOptions<QREvaluationSettings> settings)
+public class ClientEvaluationService(IAssignmentRepository assignmentRepository, IClientRepository clientRepository, IClientEvaluationSessionRepository clientEvaluationSessionRepository, IAssignmentEvaluationRepository assignmentEvaluationRepository, IFileService fileService, IConfiguration configuration)
     : IClientEvaluationService
 {
-    private readonly QREvaluationSettings _settings = settings.Value;
+    private readonly string _publicBaseUrl = configuration["QREvaluationSettings:PublicBaseUrl"]
+        ?? throw new Exception("QREvaluationSettings:PublicBaseUrl no configurado");
     public async Task<CreateEvaluationSessionResponse> CreateSessionAsync(string assignmentId)
     {
         var assignment = await assignmentRepository.GetAsync(assignmentId)
@@ -35,7 +37,7 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
         return new CreateEvaluationSessionResponse
         {
             Token = token,
-            Url = $"{_settings.PublicBaseUrl}/HtmlTemplate/login.html?token={token}"
+            Url = $"{_publicBaseUrl}/HtmlTemplate/login.html?token={token}"
         };
     }
 
@@ -64,11 +66,26 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
     }
 
     public async Task SubmitEvaluationAsync(
-        CreateAssignmentEvaluationRequest request,
-        ClientEvaluationSession session)
+    CreateAssignmentEvaluationRequest request,
+    ClientEvaluationSession session)
     {
         if (session.IsUsed)
             throw new Exception("Sesión ya utilizada");
+
+        MediaFile? signatureFile = null;
+
+        if (request.ClientSignature != null)
+        {
+            var url = await fileService.SaveFileAsync(
+                request.ClientSignature,
+                "client-signatures");
+
+            signatureFile = new MediaFile
+            {
+                Url = url,
+                UploadedAt = DateTime.UtcNow
+            };
+        }
 
         var evaluation = new AssignmentEvaluation
         {
@@ -89,8 +106,8 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
             ClientComment = request.ClientComment,
             ClientSignature = new ClientSignature
             {
-                SignatureBase64 = request.ClientSignature.SignatureBase64,
-                SignedBy = request.ClientSignature.SignedBy,
+                Signature = signatureFile,
+                SignedBy = request.SignedBy,
                 SignedAt = DateTime.UtcNow
             },
             CreatedAt = DateTime.UtcNow
@@ -101,4 +118,5 @@ public class ClientEvaluationService(IAssignmentRepository assignmentRepository,
         session.IsUsed = true;
         await clientEvaluationSessionRepository.UpdateAsync(session.Id, session);
     }
+
 }
