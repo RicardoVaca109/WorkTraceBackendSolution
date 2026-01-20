@@ -254,7 +254,7 @@
                         q.answerType
                     );
 
-                    // SIEMPRE enviar Answer como string (requerido por validación)
+                    // SIEMPRE enviar Answer (incluso si es numérico) para satisfacer validación [Required]
                     formData.append(
                         `UserEvaluations[${i}].Answers[${j}].Answer`,
                         val || ""
