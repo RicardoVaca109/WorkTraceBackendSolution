@@ -140,6 +140,9 @@
                                 data-tech="${idx}"
                                 data-question="${qIdx}"
                                 placeholder="${q.answerType === 2 ? '1 - 5' : 'Respuesta...'}"
+                                ${q.answerType === 2 ? 'min="1" max="5"' : ''}
+                                onfocus="this.style.border='1px solid #ccc'"
+                                ${q.answerType === 2 ? `oninput="this.value=this.value.replace(/[^1-5]/g,'').slice(0,1)"` : ''}
                             />
                         </div>
                     `).join("")}
@@ -155,6 +158,7 @@
         const canvas = document.getElementById("signature");
         const ctx = canvas.getContext("2d");
         let drawing = false;
+        let hasSigned = false;
 
         // Función unificada para obtener coordenadas
         function getPos(e) {
@@ -173,6 +177,7 @@
         function startDraw(e) {
             if (e.type === 'touchstart') e.preventDefault(); // Evita scroll
             drawing = true;
+            hasSigned = true;
             const { x, y } = getPos(e);
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -213,7 +218,56 @@
            SUBMIT
         ================================ */
         async function submitEvaluation() {
+            const btn = document.querySelector("button[onclick='submitEvaluation()']");
             if (!evaluationData) return;
+
+            // 1. Validar Firma
+            if (!hasSigned) {
+                alert("Por favor, firme la evaluación antes de enviar.");
+                return;
+            }
+
+            // 2. Validar Respuestas
+            let isValid = true;
+            let firstInvalidInput = null;
+
+            // Resetear estilos previos
+            document.querySelectorAll('input').forEach(i => i.style.border = "1px solid #ccc");
+
+            evaluationData.evaluations.forEach((e, i) => {
+                e.questions.forEach((q, j) => {
+                    const input = document.querySelector(
+                        `input[data-tech="${i}"][data-question="${j}"]`
+                    );
+                    const val = input.value.trim();
+
+                    // Validar requerido
+                    if (!val) {
+                        input.style.border = "2px solid red";
+                        isValid = false;
+                        if (!firstInvalidInput) firstInvalidInput = input;
+                    } 
+                    // Validar rango numérico
+                    else if (q.answerType === 2) {
+                        const numVal = parseInt(val, 10);
+                        if (isNaN(numVal) || numVal < 1 || numVal > 5) {
+                            input.style.border = "2px solid red";
+                            isValid = false;
+                            if (!firstInvalidInput) firstInvalidInput = input;
+                        }
+                    }
+                });
+            });
+
+            if (!isValid) {
+                alert("Por favor, complete todos los campos correctamente. Las calificaciones deben ser entre 1 y 5.");
+                if (firstInvalidInput) firstInvalidInput.focus();
+                return;
+            }
+
+            // Deshabilitar botón para evitar doble envío
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
 
             // Convertir canvas a Blob
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -303,10 +357,18 @@
                         if (errText) msg = errText;
                     }
                     alert(msg);
+                    
+                    // Reactivar botón en error
+                    btn.disabled = false;
+                    btn.innerText = "Enviar evaluación";
                 }
             } catch (error) {
                 console.error(error);
                 alert("Error de conexión: " + error.message);
+                
+                // Reactivar botón en error
+                btn.disabled = false;
+                btn.innerText = "Enviar evaluación";
             }
         }
 
