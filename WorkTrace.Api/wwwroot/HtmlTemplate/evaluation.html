@@ -279,7 +279,7 @@
 
                 if (res.ok) {
                     alert("Evaluación enviada correctamente");
-                    // Opcional: Redirigir o limpiar
+                    window.location.href = "https://tecnic-solution.com/";
                 } else {
                     const errText = await res.text();
                     console.error("Error submit:", errText);
