@@ -3,6 +3,7 @@
 public class AssignmentEvaluationDetailResponse
 {
     public string AssignmentId { get; set; }
+    public string ClientName { get; set; }
     public string UserComment { get; set; }
 
     public string? ClientComment { get; set; }
