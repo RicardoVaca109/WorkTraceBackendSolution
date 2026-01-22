@@ -84,7 +84,7 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
         return (int)Math.Round(numeric.Average(), 0);
     }
 
-    public async Task<AssignmentEvaluationDetailResponse>GetEvaluationDetailByAssignmentAsync(string assignmentId)
+    public async Task<AssignmentEvaluationDetailResponse> GetEvaluationDetailByAssignmentAsync(string assignmentId)
     {
         var assignmentObjectId = ObjectId.Parse(assignmentId);
 
@@ -96,11 +96,12 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
         var evaluations = await evaluationRepository
             .GetByAssignmentAsync(assignmentObjectId);
 
-        if (!evaluations.Any())
+        if (evaluations == null || !evaluations.Any())
             throw new Exception("No existen evaluaciones para esta asignación");
 
         // 3. Obtener formularios
         var formTemplateIds = evaluations
+            .Where(e => e != null)
             .Select(e => e.FormTemplateId.ToString())
             .Distinct()
             .ToList();
@@ -111,7 +112,9 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
 
         // 4. Obtener técnicos evaluados
         var userIds = evaluations
+            .Where(e => e.UserEvaluations != null)
             .SelectMany(e => e.UserEvaluations)
+            .Where(u => u != null)
             .Select(u => u.UserId.ToString())
             .Distinct()
             .ToList();
@@ -126,70 +129,81 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
         }
 
         // 5. Construir respuesta
+        var firstEval = evaluations.FirstOrDefault();
+        
         var response = new AssignmentEvaluationDetailResponse
         {
             AssignmentId = assignmentId,
-            UserComment = assignment.Comment,
-            ClientComment = evaluations.First().ClientComment,
-            ClientSignature = evaluations.First().ClientSignature == null
+            UserComment = assignment.Comment ?? string.Empty,
+            ClientComment = firstEval?.ClientComment,
+            ClientSignature = (firstEval?.ClientSignature == null || firstEval.ClientSignature.Signature == null)
                 ? null
                 : new ClientSignatureResponse
                 {
-                    Url = evaluations.First().ClientSignature.Signature.Url,
-                    SignedBy = evaluations.First().ClientSignature.SignedBy,
-                    SignedAt = evaluations.First().ClientSignature.SignedAt
+                    Url = firstEval.ClientSignature.Signature.Url ?? string.Empty,
+                    SignedBy = firstEval.ClientSignature.SignedBy ?? "Desconocido",
+                    SignedAt = firstEval.ClientSignature.SignedAt
                 },
             MediaFiles = assignment.MediaFiles?
+                .Where(m => m != null)
                 .Select(m => new MediaFileResponse
                 {
-                    Url = m.Url,
+                    Url = m.Url ?? string.Empty,
                     UploadedAt = m.UploadedAt
-                }).ToList() ?? new()
+                }).ToList() ?? new List<MediaFileResponse>()
         };
 
         // 6. Agrupar por formulario
-        foreach (var form in formTemplates)
+        if (formTemplates != null)
         {
-            var formEvaluations = evaluations
-                .Where(e => e.FormTemplateId == ObjectId.Parse(form.Id))
-                .ToList();
-
-            var formResponse = new FormEvaluationResponse
+            foreach (var form in formTemplates)
             {
-                FormTemplateId = form.Id,
-                FormName = form.Name,
-                Questions = form.Questions.Select(q => new FormEvaluationQuestionResponse
-                {
-                    QuestionKey = q.QuestionKey,
-                    QuestionText = q.QuestionText
-                }).ToList()
-            };
+                var formEvaluations = evaluations
+                    .Where(e => e.FormTemplateId == ObjectId.Parse(form.Id))
+                    .ToList();
 
-            foreach (var eval in formEvaluations)
-            {
-                foreach (var userEval in eval.UserEvaluations)
+                var formResponse = new FormEvaluationResponse
                 {
-                    var userId = userEval.UserId.ToString();
-
-                    formResponse.UserEvaluations.Add(new UserEvaluationResponse
+                    FormTemplateId = form.Id,
+                    FormName = form.Name ?? "Sin Nombre",
+                    Questions = form.Questions?.Select(q => new FormEvaluationQuestionResponse
                     {
-                        UserId = userId,
-                        UserName = users.ContainsKey(userId)
-                            ? users[userId].FullName
-                            : "Desconocido",
-                        Score = userEval.Score,
-                        Answers = userEval.Answers.Select(a => new FormAnswerResponse
+                        QuestionKey = q.QuestionKey ?? string.Empty,
+                        QuestionText = q.QuestionText ?? string.Empty
+                    }).ToList() ?? new List<FormEvaluationQuestionResponse>()
+                };
+
+                foreach (var eval in formEvaluations)
+                {
+                    if (eval.UserEvaluations == null) continue;
+
+                    foreach (var userEval in eval.UserEvaluations)
+                    {
+                        if (userEval == null) continue;
+
+                        var userId = userEval.UserId.ToString();
+
+                        formResponse.UserEvaluations.Add(new UserEvaluationResponse
                         {
-                            QuestionKey = a.QuestionKey,
-                            QuestionValue = a.QuestionValue,
-                            Answer = a.Answer,
-                            NumericValue = a.NumericValue
-                        }).ToList()
-                    });
+                            UserId = userId,
+                            UserName = users.ContainsKey(userId)
+                                ? users[userId].FullName
+                                : "Desconocido",
+                            Score = userEval.Score,
+                            Answers = userEval.Answers?.Select(a => new FormAnswerResponse
+                            {
+                                QuestionKey = a.QuestionKey ?? string.Empty,
+                                QuestionValue = a.QuestionValue ?? string.Empty,
+                                Answer = a.Answer,
+                                NumericValue = a.NumericValue
+                            }).ToList() ?? new List<FormAnswerResponse>()
+                        });
+                    }
                 }
+                response.Forms.Add(formResponse);
             }
-            response.Forms.Add(formResponse);
         }
+        
         return response;
     }
 }
