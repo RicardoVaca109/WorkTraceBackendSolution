@@ -3,14 +3,16 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
+using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Application.Repositories;
 using WorkTrace.Application.Services;
 using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class AssignmentService(IAssignmentRepository _assignmentRepository, IClientRepository _clientRepository, IFileService fileService, IFormTemplateRepository _formTemplateRepository, IGeocodingService _geocodingService, IServiceRepository _serviceRepository, IStatusRepository _statusRepository, IUserRepository _userRepository, IMapper _mapper) : IAssignmentService
+public class AssignmentService(IAssignmentRepository _assignmentRepository, IClientRepository _clientRepository, IFileService fileService, IFormTemplateRepository _formTemplateRepository, IGeocodingService _geocodingService, IInstallationStepRepository _installationStepRepository, IServiceRepository _serviceRepository, IStatusRepository _statusRepository, IUserRepository _userRepository, IMapper _mapper) : IAssignmentService
 {
     public async Task<AssignmentResponse> CreateAssignmentAdminAsync(CreateAssignmentRequest request)
     {
@@ -349,6 +351,55 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
 
         response.AssignedForms =
             await ResolveAssignedFormsAsync(assignment.AssignedForms);
+
+        return response;
+    }
+
+    public async Task<StartAssignmentDetailResponse>GetStartAssignmentDetailAsync(string assignmentId)
+    {
+        var assignment = await _assignmentRepository.GetAsync(assignmentId)
+            ?? throw new Exception("Asignación no encontrada");
+
+        var service = await _serviceRepository.GetAsync(assignment.Service.ToString())
+            ?? throw new Exception("Servicio no encontrado");
+
+        var installationStepIds = service.InstallationSteps?
+            .Select(x => x.ToString())
+            .ToList() ?? new();
+
+        var allSteps = await _installationStepRepository.GetAsync();
+
+        var installationSteps = allSteps
+            .Where(s => installationStepIds.Contains(s.Id))
+            .ToList();
+
+        var response = new StartAssignmentDetailResponse
+        {
+            AssignmentId = assignment.Id,
+
+            ServiceName = service.Name,
+            ServiceDescription = service.Description,
+
+            InstallationSteps = installationSteps
+                .OrderBy(s => s.Steps)
+                .Select(s => new InstallationStepResponse
+                {
+                    Id = s.Id,
+                    Steps = s.Steps,
+                    Description = s.Description
+                })
+                .ToList(),
+
+            TechnicianComment = assignment.Comment,
+
+            MediaFiles = assignment.MediaFiles?
+                .Select(m => new MediaFileResponse
+                {
+                    Url = m.Url,
+                    UploadedAt = m.UploadedAt
+                })
+                .ToList() ?? new()
+        };
 
         return response;
     }

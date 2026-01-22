@@ -48,5 +48,12 @@ namespace WorkTrace.Api.Controllers.MobileControllers
             var result = await assignmentService.UpdateProgressAsync(id, request);
             return Ok(result);
         }
+
+        [HttpGet("{assignmentId}/start-detail")]
+        public async Task<IActionResult> GetStartAssignmentDetail(string assignmentId)
+        {
+            var result = await assignmentService.GetStartAssignmentDetailAsync(assignmentId);
+            return Ok(result);
+        }
     }
 }
