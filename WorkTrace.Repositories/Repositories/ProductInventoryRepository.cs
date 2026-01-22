@@ -1,19 +1,15 @@
-﻿using Microsoft.Extensions.Options;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using WorkTrace.Application.Repositories;
-using WorkTrace.Data.Common.Setttings;
+using WorkTrace.Data;
 using WorkTrace.Data.Models;
 
 namespace WorkTrace.Repositories.Repositories;
 
 public class ProductInventoryRepository : GenericRepository<ProductInventory>, IProductInventoryRepository
 {
-    public ProductInventoryRepository(IOptions<WorkTraceDatabaseSettings> settings)
+    public ProductInventoryRepository(WorkTraceContext context)
     {
-        var mongoClient = new MongoClient(settings.Value.ConnectionString);
-        var mongoDatabase = mongoClient.GetDatabase(settings.Value.DataBaseName);
-
-        Collection = mongoDatabase.GetCollection<ProductInventory>("ProductInventory");
+        Collection = context.GetCollection<ProductInventory>("ProductInventory");
     }
 
     public async Task BulkUpsertAsync(List<ProductInventory> products)
