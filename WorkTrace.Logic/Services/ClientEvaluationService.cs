@@ -53,10 +53,10 @@ public class ClientEvaluationService(
         var session = await clientEvaluationSessionRepository.GetByTokenAsync(request.Token)
             ?? throw new Exception("Sesión inválida o expirada");
 
-        var client = await clientRepository.GetByEmailAsync(request.Email)
+        var client = await clientRepository.GetByDocumentNumberAsync(request.DocumentNumber)
             ?? throw new Exception("Credenciales inválidas");
 
-        if (client.DocumentNumber != request.DocumentNumber)
+        if (!string.Equals(client.Email, request.Email, StringComparison.OrdinalIgnoreCase))
             throw new Exception("Credenciales inválidas");
 
         if (ObjectId.Parse(client.Id) != session.ClientId)
@@ -72,6 +72,7 @@ public class ClientEvaluationService(
             ExpiresAt = session.ExpiresAt
         };
     }
+
 
     public async Task SubmitEvaluationAsync(
     CreateAssignmentEvaluationRequest request,
