@@ -129,6 +129,7 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
         var response = new AssignmentEvaluationDetailResponse
         {
             AssignmentId = assignmentId,
+            UserComment = assignment.Comment,
             ClientComment = evaluations.First().ClientComment,
             ClientSignature = evaluations.First().ClientSignature == null
                 ? null
