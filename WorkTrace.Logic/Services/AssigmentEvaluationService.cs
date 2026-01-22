@@ -8,7 +8,7 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluationRepository, IMapper mapper) : IAssignmentEvaluationService
+public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluationRepository, IAssignmentRepository assignmentRepository, IUserRepository userRepository, IFormTemplateRepository formTemplateRepository, IMapper mapper) : IAssignmentEvaluationService
 {
     public async Task<AssignmentEvaluationResponse> CreateEvaluationAsync(CreateAssignmentEvaluationRequest request)
     {
@@ -82,5 +82,113 @@ public class AssigmentEvaluationService(IAssignmentEvaluationRepository evaluati
             return 0;
 
         return (int)Math.Round(numeric.Average(), 0);
+    }
+
+    public async Task<AssignmentEvaluationDetailResponse>GetEvaluationDetailByAssignmentAsync(string assignmentId)
+    {
+        var assignmentObjectId = ObjectId.Parse(assignmentId);
+
+        // 1. Obtener la asignación
+        var assignment = await assignmentRepository.GetAsync(assignmentId)
+            ?? throw new Exception("Asignación no encontrada");
+
+        // 2. Obtener evaluaciones de la asignación
+        var evaluations = await evaluationRepository
+            .GetByAssignmentAsync(assignmentObjectId);
+
+        if (!evaluations.Any())
+            throw new Exception("No existen evaluaciones para esta asignación");
+
+        // 3. Obtener formularios
+        var formTemplateIds = evaluations
+            .Select(e => e.FormTemplateId.ToString())
+            .Distinct()
+            .ToList();
+
+        var formTemplates = await formTemplateRepository.GetManyAsync(
+            f => formTemplateIds.Contains(f.Id)
+        );
+
+        // 4. Obtener técnicos evaluados
+        var userIds = evaluations
+            .SelectMany(e => e.UserEvaluations)
+            .Select(u => u.UserId.ToString())
+            .Distinct()
+            .ToList();
+
+        var users = new Dictionary<string, User>();
+
+        foreach (var userId in userIds)
+        {
+            var user = await userRepository.GetAsync(userId);
+            if (user != null)
+                users[userId] = user;
+        }
+
+        // 5. Construir respuesta
+        var response = new AssignmentEvaluationDetailResponse
+        {
+            AssignmentId = assignmentId,
+            ClientComment = evaluations.First().ClientComment,
+            ClientSignature = evaluations.First().ClientSignature == null
+                ? null
+                : new ClientSignatureResponse
+                {
+                    Url = evaluations.First().ClientSignature.Signature.Url,
+                    SignedBy = evaluations.First().ClientSignature.SignedBy,
+                    SignedAt = evaluations.First().ClientSignature.SignedAt
+                },
+            MediaFiles = assignment.MediaFiles?
+                .Select(m => new MediaFileResponse
+                {
+                    Url = m.Url,
+                    UploadedAt = m.UploadedAt
+                }).ToList() ?? new()
+        };
+
+        // 6. Agrupar por formulario
+        foreach (var form in formTemplates)
+        {
+            var formEvaluations = evaluations
+                .Where(e => e.FormTemplateId == ObjectId.Parse(form.Id))
+                .ToList();
+
+            var formResponse = new FormEvaluationResponse
+            {
+                FormTemplateId = form.Id,
+                FormName = form.Name,
+                Questions = form.Questions.Select(q => new FormEvaluationQuestionResponse
+                {
+                    QuestionKey = q.QuestionKey,
+                    QuestionText = q.QuestionText
+                }).ToList()
+            };
+
+            foreach (var eval in formEvaluations)
+            {
+                foreach (var userEval in eval.UserEvaluations)
+                {
+                    var userId = userEval.UserId.ToString();
+
+                    formResponse.UserEvaluations.Add(new UserEvaluationResponse
+                    {
+                        UserId = userId,
+                        UserName = users.ContainsKey(userId)
+                            ? users[userId].FullName
+                            : "Desconocido",
+                        Score = userEval.Score,
+                        Answers = userEval.Answers.Select(a => new FormAnswerResponse
+                        {
+                            QuestionKey = a.QuestionKey,
+                            QuestionValue = a.QuestionValue,
+                            Answer = a.Answer,
+                            NumericValue = a.NumericValue
+                        }).ToList()
+                    });
+                }
+            }
+            response.Forms.Add(formResponse);
+        }
+        return response;
     }
 }

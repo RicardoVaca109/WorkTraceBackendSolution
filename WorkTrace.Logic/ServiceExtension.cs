@@ -21,5 +21,6 @@ public static class ServiceExtension
         services.AddScoped<IClientEvaluationService, ClientEvaluationService>();
         services.AddScoped<IProductInventoryService, ProductInventoryService>();
         services.AddScoped<IEvaluationDashboardService, EvaluationDashboardService>();
+        services.AddScoped<IAssignmentEvaluationService, AssigmentEvaluationService>();
     }
 }

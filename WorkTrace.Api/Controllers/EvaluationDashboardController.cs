@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WorkTrace.Application.DTOs.KPIsDTO;
 using WorkTrace.Application.Services;
 
 namespace WorkTrace.Api.Controllers;

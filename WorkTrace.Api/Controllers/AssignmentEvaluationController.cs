@@ -46,4 +46,13 @@ public class AssignmentEvaluationController(IAssignmentEvaluationService _servic
         await _service.UpdateEvaluationAsync(evaluationId, request);
         return NoContent();
     }
+
+    [Authorize]
+    [HttpGet("detail/{assignmentId}")]
+    public async Task<IActionResult> GetDetailForAssignment(string assignmentId)
+    {
+        return Ok(
+            await _service.GetEvaluationDetailByAssignmentAsync(assignmentId)
+        );
+    }
 }
