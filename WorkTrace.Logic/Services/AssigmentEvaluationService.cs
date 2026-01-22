@@ -12,6 +12,7 @@ namespace WorkTrace.Logic.Services;
 public class AssigmentEvaluationService(
     IAssignmentEvaluationRepository evaluationRepository, 
     IAssignmentRepository assignmentRepository, 
+    IClientRepository clientRepository,
     IUserRepository userRepository, 
     IFormTemplateRepository formTemplateRepository, 
     IMapper mapper,
@@ -101,6 +102,8 @@ public class AssigmentEvaluationService(
             var assignment = await assignmentRepository.GetAsync(assignmentId)
                 ?? throw new Exception("Asignación no encontrada");
 
+            var client = await clientRepository.GetAsync(assignment.Client.ToString());
+
             // 2. Obtener evaluaciones de la asignación
             var evaluations = await evaluationRepository
                 .GetByAssignmentAsync(assignmentObjectId);
@@ -143,6 +146,7 @@ public class AssigmentEvaluationService(
             var response = new AssignmentEvaluationDetailResponse
             {
                 AssignmentId = assignmentId,
+                ClientName = client?.FullName ?? "Cliente Desconocido",
                 UserComment = assignment.Comment ?? string.Empty,
                 ClientComment = firstEval?.ClientComment,
                 ClientSignature = (firstEval?.ClientSignature == null || firstEval.ClientSignature.Signature == null)
