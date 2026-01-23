@@ -9,6 +9,4 @@ public class StartAssignmentDetailResponse
     public string ServiceName { get; set; }
     public string ServiceDescription { get; set; }
     public List<InstallationStepResponse> InstallationSteps { get; set; } = new();
-    public string? TechnicianComment { get; set; }
-    public List<MediaFileResponse> MediaFiles { get; set; } = new();
 }

@@ -388,17 +388,7 @@ public class AssignmentService(IAssignmentRepository _assignmentRepository, ICli
                     Steps = s.Steps,
                     Description = s.Description
                 })
-                .ToList(),
-
-            TechnicianComment = assignment.Comment,
-
-            MediaFiles = assignment.MediaFiles?
-                .Select(m => new MediaFileResponse
-                {
-                    Url = m.Url,
-                    UploadedAt = m.UploadedAt
-                })
-                .ToList() ?? new()
+                .ToList()
         };
 
         return response;
