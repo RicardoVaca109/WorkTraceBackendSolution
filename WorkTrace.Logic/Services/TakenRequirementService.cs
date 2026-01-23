@@ -84,9 +84,11 @@ public class TakenRequirementService (
 
     public async Task<List<TakenRequirementWithClientResponse>>GetByUserAndDateRangeAsync(string userId, DateTime start, DateTime end)
     {
+        var adjustedEnd = end.Date.AddDays(1).AddTicks(-1);
+
         var requirements =
             await _takenRequirementRepository
-                .GetByDateUserTakenRequirements(userId, start, end);
+                .GetByDateUserTakenRequirements(userId, start, adjustedEnd);
 
         var result = new List<TakenRequirementWithClientResponse>();
 
@@ -118,7 +120,9 @@ public class TakenRequirementService (
 
     public async Task<List<TakenRequirementUserAndClientResponse>> GetByDate(DateTime start, DateTime end)
     {
-        var requirements = await _takenRequirementRepository.GetByDate(start, end);
+        var adjustedEnd = end.Date.AddDays(1).AddTicks(-1);
+
+        var requirements = await _takenRequirementRepository.GetByDate(start, adjustedEnd);
         var result = new List<TakenRequirementUserAndClientResponse>();
 
         foreach (var req in requirements)
