@@ -7,7 +7,7 @@ using WorkTrace.Data.Models;
 
 namespace WorkTrace.Logic.Services;
 
-public class FormTemplateService (IFormTemplateRepository _formTemplateRepository, IMapper _mapper) : IFormTemplateService
+public class FormTemplateService(IFormTemplateRepository _formTemplateRepository, IMapper _mapper) : IFormTemplateService
 {
     public async Task<List<FormTemplateResponse>> GetAllAsync()
     {
@@ -59,30 +59,41 @@ public class FormTemplateService (IFormTemplateRepository _formTemplateRepositor
         if (template == null)
             throw new Exception("Plantilla no encontrada");
 
+        if (template.Questions == null)
+            template.Questions = new List<FormQuestion>();
         foreach (var request in questions)
         {
             if (string.IsNullOrEmpty(request.Id))
-                throw new Exception("El Id de la pregunta es obligatorio para editar");
+            {
+                var newQuestion = new FormQuestion
+                {
+                    Id = ObjectId.GenerateNewId(),
+                    QuestionKey = request.QuestionKey,
+                    QuestionText = request.QuestionText,
+                    AnswerType = request.AnswerType ?? WorkTrace.Application.Enums.AnswerType.Text
+                };
+                template.Questions.Add(newQuestion);
+            }
+            else
+            {
+                var questionId = ObjectId.Parse(request.Id);
 
-            var questionId = ObjectId.Parse(request.Id);
+                var existingQuestion = template.Questions
+                    .FirstOrDefault(q => q.Id == questionId);
 
-            var existingQuestion = template.Questions
-                .FirstOrDefault(q => q.Id == questionId);
+                if (existingQuestion == null)
+                    throw new Exception($"Pregunta con Id {request.Id} no encontrada");
 
-            if (existingQuestion == null)
-                throw new Exception($"Pregunta con Id {request.Id} no encontrada");
+                if (!string.IsNullOrWhiteSpace(request.QuestionKey))
+                    existingQuestion.QuestionKey = request.QuestionKey;
 
-            // PATCH LOGIC
-            if (!string.IsNullOrWhiteSpace(request.QuestionKey))
-                existingQuestion.QuestionKey = request.QuestionKey;
+                if (!string.IsNullOrWhiteSpace(request.QuestionText))
+                    existingQuestion.QuestionText = request.QuestionText;
 
-            if (!string.IsNullOrWhiteSpace(request.QuestionText))
-                existingQuestion.QuestionText = request.QuestionText;
-
-            if (request.AnswerType.HasValue)
-                existingQuestion.AnswerType = request.AnswerType.Value;
+                if (request.AnswerType.HasValue)
+                    existingQuestion.AnswerType = request.AnswerType.Value;
+            }
         }
-
         await _formTemplateRepository.UpdateAsync(templateId, template);
 
         return _mapper.Map<FormTemplateResponse>(template);
