@@ -85,7 +85,7 @@ public class FormTemplateService (IFormTemplateRepository _formTemplateRepositor
                 if (existingQuestion == null)
                     throw new Exception($"Pregunta con Id {request.Id} no encontrada");
 
-                // PATCH LOGIC
+                // PATCH LOGIC t
                 if (!string.IsNullOrWhiteSpace(request.QuestionKey))
                     existingQuestion.QuestionKey = request.QuestionKey;
 
