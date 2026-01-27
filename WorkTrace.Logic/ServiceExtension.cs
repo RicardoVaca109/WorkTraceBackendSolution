@@ -15,6 +15,12 @@ public static class ServiceExtension
         services.AddScoped<IStatusService,  StatusService>();
         services.AddScoped<IAssignmentService, AssignmentService>();
         services.AddScoped<IGeocodingService, GeocodingService>();
-        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IFileService, CloudinaryFileService>();
+        services.AddScoped<IFormTemplateService, FormTemplateService>();
+        services.AddScoped<ITakenRequirementService, TakenRequirementService>();
+        services.AddScoped<IClientEvaluationService, ClientEvaluationService>();
+        services.AddScoped<IProductInventoryService, ProductInventoryService>();
+        services.AddScoped<IEvaluationDashboardService, EvaluationDashboardService>();
+        services.AddScoped<IAssignmentEvaluationService, AssigmentEvaluationService>();
     }
 }

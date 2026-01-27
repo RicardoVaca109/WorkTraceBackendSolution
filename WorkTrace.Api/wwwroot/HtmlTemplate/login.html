@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Acceso Cliente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+            .card h2 {
+                margin: 0 0 6px;
+                text-align: center;
+                color: #1e3a8a;
+            }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            margin-top: 6px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+        }
+
+            input:focus {
+                outline: none;
+                border-color: #2563eb;
+                box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+            }
+
+        button {
+            margin-top: 24px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #1d4ed8;
+            }
+
+        .error {
+            margin-top: 14px;
+            text-align: center;
+            color: #dc2626;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>Acceso Cliente</h2>
+        <div class="subtitle">
+            Ingrese sus datos para continuar con la evaluación
+        </div>
+
+        <label>Email</label>
+        <input id="email" type="email" placeholder="correo@ejemplo.com" />
+
+        <label>Número de documento</label>
+        <input id="doc" type="password" placeholder="Documento" />
+
+        <button onclick="login()">Ingresar</button>
+
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        const token = new URLSearchParams(window.location.search).get("token");
+
+        async function login() {
+            error.innerText = "";
+
+            const res = await fetch("/api/ClientEvaluation/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    token,
+                    email: email.value,
+                    documentNumber: doc.value
+                })
+            });
+
+            if (!res.ok) {
+                error.innerText = "Credenciales inválidas o sesión expirada";
+                return;
+            }
+
+            const data = await res.json();
+            sessionStorage.setItem("clientToken", data.sessionToken);
+            sessionStorage.setItem("assignmentId", data.assignmentId);
+            location.href = "evaluation.html";
+        }
+    </script>
+</body>
+</html>

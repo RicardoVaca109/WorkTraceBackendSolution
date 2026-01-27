@@ -16,8 +16,15 @@ public class ClientService(IClientRepository _clientRepository, IMapper _mapper)
 
     public async Task<ClientInformationResponse> GetByIdAsync(string id)
     {
-        var clientById = await _clientRepository.GetAsync(id) ?? throw new Exception("Usuario no encontrado.");
+        var clientById = await _clientRepository.GetAsync(id) ?? throw new Exception("ClienteS no encontrado.");
         var response = _mapper.Map<ClientInformationResponse>(clientById);
+        return response;
+    }
+
+    public async Task<ClientInformationResponse> GetByDocumentNumberAsync(string documentNumber)
+    {
+        var clientByDocNum = await _clientRepository.GetByDocumentNumberAsync(documentNumber) ?? throw new Exception("Client no encontrado");
+        var response = _mapper.Map<ClientInformationResponse>(clientByDocNum);
         return response;
     }
 

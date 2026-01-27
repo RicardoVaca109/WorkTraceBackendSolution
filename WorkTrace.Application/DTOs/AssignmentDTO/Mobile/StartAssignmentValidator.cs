@@ -2,7 +2,7 @@
 
 namespace WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
 
-public class StartAssignmentValidator :AbstractValidator<StartAssigmentRequest>
+public class StartAssignmentValidator :AbstractValidator<StartAssignmentRequest>
 {
 
     public StartAssignmentValidator()

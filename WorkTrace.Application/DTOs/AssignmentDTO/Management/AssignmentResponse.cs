@@ -1,4 +1,5 @@
-﻿using WorkTrace.Data.Models;
+﻿using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
+using WorkTrace.Data.Models;
 
 namespace WorkTrace.Application.DTOs.AssignmentDTO.Management;
 public class AssignmentResponse
@@ -8,9 +9,11 @@ public class AssignmentResponse
     public string Service { get; set; }
     public string Client { get; set; }
     public string Status { get; set; }
-    public string AssignedDate { get; set; }
-    public string AssignedTime { get; set; }
+    public DateTime AssignedDate { get; set; }
+    public DateTime? CheckIn { get; set; }
+    public DateTime? CheckOut { get; set; }
     public string Address { get; set; }
     public GeoPoint? DestinationLocation { get; set; }
     public string CreatedByUser { get; set; }
+    public List<AssignedFormResponse> AssignedForms { get; set; }
 }

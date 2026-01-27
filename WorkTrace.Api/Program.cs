@@ -23,6 +23,12 @@ builder.Services.AddControllers();
 // Add CORS policy
 builder.Services.AddCors(options =>
 {
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
     options.AddPolicy("AllowWebApp", policy =>
     {
         policy.WithOrigins(
@@ -45,34 +51,37 @@ builder.Services.AddApplicationServices();
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("ApplicationSettings"));
 
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(genConfig =>
+{
+    genConfig.SwaggerDoc("v1", new OpenApiInfo
     {
-        genConfig.SwaggerDoc("v1", new OpenApiInfo
+        Version = "v1",
+        Title = "WorkTraceApi",
+        Description = "Api Empresarial",
+        Contact = new OpenApiContact
         {
-            Version = "v1",
-            Title = "WorkTraceApi",
-            Description = "Api Empresarial",
-            Contact = new OpenApiContact
-            {
-                Name = "Ricardo",
-                Email = "ricardo.vaca@udla.edu.ec",
-            }
-        });
+            Name = "Ricardo",
+            Email = "ricardo.vaca@udla.edu.ec",
+        }
+    });
 
-        genConfig.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-        {
-            Name = "Authorization",
-            Type = SecuritySchemeType.Http,     
-            Scheme = "bearer",                  
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description = "Enter:{your token}"
-        });
+    genConfig.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter:{your token}"
+    });
 
-        genConfig.AddSecurityRequirement(new OpenApiSecurityRequirement 
+    genConfig.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
             {
                 new OpenApiSecurityScheme
@@ -81,12 +90,12 @@ builder.Services.AddSwaggerGen(genConfig =>
                      {
                          Type = ReferenceType.SecurityScheme,
                          Id = "Bearer"
-                     }                   
+                     }
                 },
                 new string []{}
-            }        
+            }
         });
-    });
+});
 
 var jwtConfiguration = builder.Configuration.GetSection("ApplicationSettings").Get<JwtSettings>();
 builder.Services.AddAuthentication(options =>
@@ -111,17 +120,15 @@ builder.Services.AddHttpClient();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // app.UseHttpsRedirection(); // Disabled for HTTP-only development
 
-app.UseCors("AllowWebApp");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
+app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();

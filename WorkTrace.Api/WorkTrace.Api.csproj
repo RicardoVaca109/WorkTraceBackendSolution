@@ -28,4 +28,9 @@
     <ProjectReference Include="..\WorkTrace.Repositories\WorkTrace.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\HtmlTemplate\evaluation.html" />
+    <None Include="wwwroot\HtmlTemplate\login.html" />
+  </ItemGroup>
+
 </Project>

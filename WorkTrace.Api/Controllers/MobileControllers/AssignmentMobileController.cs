@@ -16,12 +16,12 @@ namespace WorkTrace.Api.Controllers.MobileControllers
             [FromQuery] DateTime start,
             [FromQuery] DateTime end)
         {
-            var result = await assignmentService.GetAssigmentByUserandRangeAsync(userId, start, end);
+            var result = await assignmentService.GetAssignmentByUserandRangeAsync(userId, start, end);
             return Ok(result);
         }
 
         [HttpPost("{id}/start")]
-        public async Task<IActionResult> StartAssignment(string id, [FromBody] StartAssigmentRequest request)
+        public async Task<IActionResult> StartAssignment(string id, [FromBody] StartAssignmentRequest request)
         {
             var result = await assignmentService.StartAssignmentAsync(id, request);
             return Ok(result);
@@ -46,6 +46,13 @@ namespace WorkTrace.Api.Controllers.MobileControllers
         public async Task<IActionResult> UpdateProgress(string id, [FromForm] UpdateProgressRequest request)
         {
             var result = await assignmentService.UpdateProgressAsync(id, request);
+            return Ok(result);
+        }
+
+        [HttpGet("{assignmentId}/start-detail")]
+        public async Task<IActionResult> GetStartAssignmentDetail(string assignmentId)
+        {
+            var result = await assignmentService.GetStartAssignmentDetailAsync(assignmentId);
             return Ok(result);
         }
     }

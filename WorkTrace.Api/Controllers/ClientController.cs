@@ -23,6 +23,11 @@ public class ClientController(IClientService clientService) : ControllerBase
         await clientService.GetByIdAsync(id);
 
     [Authorize]
+    [HttpGet("by-docnum")]
+    public async Task<ClientInformationResponse> GetByDocumentNumberAsync(string documentNumber) =>
+    await clientService.GetByDocumentNumberAsync(documentNumber);
+
+    [Authorize]
     [HttpPost]
     public async Task<ClientInformationResponse> Create(CreateClientRequest request) =>
         await clientService.CreateClientAsync(request);

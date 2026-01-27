@@ -9,4 +9,5 @@ public class CreateAssignmentRequest
     public DateTime AssignedDate { get; set; }
     public string Address { get; set; }
     public string CreatedByUser { get; set; }
+    public List<string>? AssignedForms { get; set; }
 }

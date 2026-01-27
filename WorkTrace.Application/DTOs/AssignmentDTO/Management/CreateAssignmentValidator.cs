@@ -36,6 +36,11 @@ public class CreateAssignmentValidator : AbstractValidator<CreateAssignmentReque
         RuleFor(x => x.CreatedByUser)
             .NotEmpty().WithMessage("El Usuario que creo la Asignación debe ser Administrador validado.")
             .Must(BeValidObjectId).WithMessage("El Id del Usuario que creo la Asignación debe existir.");
+
+        RuleForEach(x => x.AssignedForms)
+            .Must(BeValidObjectId)
+            .When(x => x.AssignedForms != null)
+            .WithMessage("El Id del formulario debe ser válido");
     }
     private bool BeValidObjectId(string id)
     {

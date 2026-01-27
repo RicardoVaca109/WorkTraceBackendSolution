@@ -3,9 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using WorkTrace.Application.DTOs.AssignmentDTO.Management;
 using WorkTrace.Application.DTOs.AssignmentDTO.Mobile;
+using WorkTrace.Application.DTOs.AssignmentEvaluationDTO;
 using WorkTrace.Application.DTOs.ClientDTO.Information;
+using WorkTrace.Application.DTOs.FormTemplateDTO.Information;
 using WorkTrace.Application.DTOs.ServiceMgmtDTO.Management;
 using WorkTrace.Application.DTOs.StatusDTO.Information;
+using WorkTrace.Application.DTOs.TakenRequirementDTO;
 using WorkTrace.Application.DTOs.UserDTO.Information;
 using WorkTrace.Application.DTOs.UserDTO.Login;
 using WorkTrace.Application.Profiles;
@@ -26,9 +29,19 @@ public static class ServiceExtension
                 .AddValidatorsFromAssemblyContaining<UpdateAssignmentMobileValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateLocationValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateProgressValidator>()
+        //AssignmentEvaluation Validations
+                .AddValidatorsFromAssemblyContaining<CreateAssignmentValidator>()
+                .AddValidatorsFromAssemblyContaining<ClientSignatureValidator>()
+                .AddValidatorsFromAssemblyContaining<FormAnswerValidator>()
+                .AddValidatorsFromAssemblyContaining<UserEvaluationValidator>()
         //Client Validations
                 .AddValidatorsFromAssemblyContaining<CreateClientValidator>()
                 .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()
+        //FormTemplate and Question Validators
+                .AddValidatorsFromAssemblyContaining<CreateFormQuestionRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateFormQuestionsRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<CreateFormTemplateRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateFormTemplateRequestValidator>()
         //User Validations
                 .AddValidatorsFromAssemblyContaining<CreateUserValidator>()
                 .AddValidatorsFromAssemblyContaining<LoginValidator>()
@@ -40,7 +53,10 @@ public static class ServiceExtension
                 .AddValidatorsFromAssemblyContaining<UpdateServiceValidator>()
         //Status Validations
                 .AddValidatorsFromAssemblyContaining<CreateStatusValidator>()
-                .AddValidatorsFromAssemblyContaining<UpdateClientValidator>();
+                .AddValidatorsFromAssemblyContaining<UpdateClientValidator>()
+        //Taken Requirements Validators
+                .AddValidatorsFromAssemblyContaining<CreateTakenRequirementRequestValidator>()
+                .AddValidatorsFromAssemblyContaining<UpdateTakenRequirementRequestValidator>();
 
         //Automapper
         services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
@@ -48,5 +64,8 @@ public static class ServiceExtension
         services.AddAutoMapper(cfg => { }, typeof(ClientProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(StatusProfile).Assembly);
         services.AddAutoMapper(cfg => { }, typeof(AssignmentProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(AssignmentEvaluationProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(FormTemplateProfile).Assembly);
+        services.AddAutoMapper(cfg => { }, typeof(TakenRequirementProfile).Assembly);
     }
 }

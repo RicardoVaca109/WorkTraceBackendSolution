@@ -6,7 +6,8 @@ namespace WorkTrace.Data.Models;
 public class TakenRequirement : BaseModel 
 {
     public ObjectId User { get; set; }
-    public ObjectId Client {  get; set; }
+    public ObjectId? Client {  get; set; }
     public DateTime Date { get; set; }
+    public string Title { get; set; }
     public string Description { get; set; }
 }

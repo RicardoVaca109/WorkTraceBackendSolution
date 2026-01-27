@@ -28,12 +28,11 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
 
     public async Task<UserInformationResponse> CreateAsync(CreateUserRequest userCreate)
     {
-        var existingUsers = await _userRepository.GetByDocumentNumberAndEmailAsync(userCreate.DocumentNumber, userCreate.Email);
+        if (await _userRepository.GetByDocumentNumberAsync(userCreate.DocumentNumber) != null)
+            throw new Exception("Ya existe un usuario con este número de documento");
 
-        if (existingUsers.Any(u => u.DocumentNumber == userCreate.DocumentNumber))
-            throw new Exception("Ya un Usuario en el sistema con este número de Documento");
-        if (existingUsers.Any(u => u.Email == userCreate.Email))
-            throw new Exception("Ya hay un usuario con este correo.");
+        if (await _userRepository.GetByEmailAsync(userCreate.Email) != null)
+            throw new Exception("Ya existe un usuario con este correo");
 
         userCreate.Password = BCrypt.Net.BCrypt.HashPassword(userCreate.Password);
         userCreate.IsActive = true;
@@ -60,7 +59,7 @@ public class UserService(IUserRepository _userRepository, IJwtService _jwtServic
         return new LoginResponse
         {
             Token = token,
-            ExpireAt = DateTime.UtcNow.AddMinutes(60)
+            ExpireAt = DateTime.UtcNow.AddMinutes(400)
         };
     }
 

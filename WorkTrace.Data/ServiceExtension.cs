@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection; //Inyeccion de dependencias 
+﻿using Microsoft.Extensions.DependencyInjection; 
 
 namespace WorkTrace.Data;
 
